@@ -17,6 +17,7 @@ contract Auction {
     // events
     event LogBid(uint256 highestBid);
     event LogAuctionCancelled(string reason);
+    event LogRedemption(account bidder, funds);
 
     modifier onlyOwner() {
         require(msg.sender == owner);
@@ -43,14 +44,25 @@ contract Auction {
         _;
     }
 
-    modifier onlyAuctionEndedOrCancelled() {
+    modifier onlyAuctionClosed() {
         require(cancel || now > auctionEndTime);
         _;
     }
 
-    modifier checkValue(uint256 _bid) {
+    modifier onlyNonZeroFunds() {
+        require(msg.value > 0);
+        _;
+    }
+
+    modifier onlyHasEnoughFunds(uint256 _bid) {
         uint256 previousBid = currentBids[msg.sender];
-        uint256 transactionRefund = msg.value - previousBid;
+        uint256 fundsNeeded = _bid - previousBid;
+        require(msg.value > fundsNeeded);
+        _;
+    }
+
+    modifier onlyBeatsBid(uint256 _bid) {
+        require(_bid > highestBid);
         _;
     }
 
@@ -63,7 +75,8 @@ contract Auction {
         owner = _seller;
         ipfsImage = _ipfsImage;
         description = _description;
-        auctionEndTime = now + _auctionTimeLimit;
+        auctionStartTime = now;
+        auctionEndTime = auctionStartTime + _auctionTimeLimit;
         cancel = false;
     }
 
@@ -74,19 +87,25 @@ contract Auction {
         emit LogAuctionCancelled(_reason);
     }
 
-    function bid(uint256 _bid)
-    public payable onlyNotCancelled onlyAfterStart onlyBeforeEnd onlyNotOwner checkValue(_bid)
+    function placeBid(uint256 _bid)
+    public payable
+    onlyNotCancelled onlyAfterStart onlyBeforeEnd onlyNotOwner
+    onlyNonZeroFunds onlyHasEnoughFunds(_bid) onlyBeatsBid(_bid)
     {
+        uint256 previousBid = currentBids[msg.sender];
+        uint256 increment = _bid - previousBid;
+        uint256 refund = msg.value - increment;
+
         currentBids[msg.sender] = _bid;
-        if (_bid > highestBid) {
-            highestBid = _bid;
-            highestBidder = msg.sender;
-        }
+        highestBid = _bid;
+        highestBidder = msg.sender;
         emit LogBid(highestBid);
+
+        msg.sender.transfer(refund);
     }
 
     function redeem()
-    public onlyAuctionEndedOrCancelled
+    public onlyAuctionClosed
     {
         uint256 funds;
         if (cancel) {
@@ -101,7 +120,7 @@ contract Auction {
                 funds = currentBids[msg.sender];
             }
         }
-
         msg.sender.transfer(funds);
+        LogRedemption(msg.sender, funds);
     }
 }
