@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { Provider } from 'react-redux'
 
 import SimpleStorageContract from './truffle-contracts/SimpleStorage.json'
@@ -13,14 +13,12 @@ import store from './store'
 ReactDOM.render(
   <Provider store={store}>
     <Web3Load dappContracts={SimpleStorageContract}>
-      <BrowserRouter>
+      <Router>
         <div>
-          <Switch>
-            <Route path="/" component={App} />
-            <Route path="/new" component={CreateAuction} />
-          </Switch>
+          <Route exact path="/" component={App} />
+          <Route path="/new" component={CreateAuction} />
         </div>
-      </BrowserRouter>
+      </Router>
     </Web3Load>
   </Provider>,
   document.getElementById('root')
