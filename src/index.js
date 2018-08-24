@@ -6,6 +6,7 @@ import { Provider } from 'react-redux'
 import SimpleStorageContract from './truffle-contracts/SimpleStorage.json'
 import Web3Load from './components/Web3Load'
 import App from './components/App'
+import CreateAuction from './components/Auction'
 
 import store from './store'
 
@@ -16,6 +17,7 @@ ReactDOM.render(
         <div>
           <Switch>
             <Route path="/" component={App} />
+            <Route path="/new" component={CreateAuction} />
           </Switch>
         </div>
       </BrowserRouter>
