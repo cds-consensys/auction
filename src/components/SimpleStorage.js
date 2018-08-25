@@ -33,7 +33,7 @@ class SimpleStorage extends Component {
     try {
       this.web3 = this.props.web3
       this.accounts = this.props.accounts
-      this.simpleStorageInstance = this.props.contracts[0]
+      this.simpleStorageInstance = this.props.contracts.simpleStorage
 
       // set up events
       // https://github.com/ethereum/wiki/wiki/JavaScript-API#contract-events
@@ -194,6 +194,7 @@ class SimpleStorage extends Component {
 }
 
 function mapStateToProps(state) {
+  console.log('State', state)
   return {
     accounts: state.accounts,
     contracts: state.contracts,
