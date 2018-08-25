@@ -10,6 +10,7 @@ import AuctionContract from './truffle-contracts/Auction.json'
 import Web3Load from './components/Web3Load'
 import SimpleStorage from './components/SimpleStorage'
 import CreateAuction from './components/CreateAuction'
+import ListAuctions from './components/ListAuctions'
 import store from './store'
 import NavBar from './components/NavBar'
 
@@ -27,6 +28,7 @@ ReactDOM.render(
           <NavBar />
           <Route exact path="/" component={SimpleStorage} />
           <Route path="/new" component={CreateAuction} />
+          <Route path="/list" component={ListAuctions} />
         </div>
       </Router>
     </Web3Load>

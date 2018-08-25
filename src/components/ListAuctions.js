@@ -5,25 +5,22 @@ class AuctionList extends Component {
   constructor() {
     super()
 
-    this.state = {}
+    this.state = { summaries: [] }
   }
 
   async componentDidMount() {
     try {
       console.log('componentDidMount')
+      this.getAllAuctions()
     } catch (error) {
       console.log(error)
     }
   }
 
   async getAllAuctions() {
-    const {
-      defaultAccount,
-      web3Context,
-      contractInstance,
-      auctionContract
-    } = this.props
-    const auctions = await contractInstance.getAllAuctions.call()
+    const { auctionFactory, auctionContract, defaultAccount } = this.props
+
+    const auctions = await auctionFactory.getAllAuctions.call()
     console.group('allAuctions query')
     console.log('auctions', auctions)
     console.groupEnd()
@@ -34,69 +31,79 @@ class AuctionList extends Component {
     const loadedAuctions = await Promise.all(loadedAuctionsPromises)
 
     const query = async auction => {
+      const startTime = await auction.auctionStartTime.call()
       const endTime = await auction.auctionEndTime.call()
       const itemName = await auction.itemName.call()
       const itemDescription = await auction.itemDescription.call()
+      const ipfsHash = await auction.ipfsImage.call()
+      const beneficiary = await auction.beneficiary.call()
+      const isMyAuction = beneficiary === defaultAccount
 
       return {
+        beneficiary,
+        auctionInstance: auction,
+        startTime: new Date(startTime.c * 1000),
         endTime: new Date(endTime.c * 1000),
         itemName,
-        itemDescription
+        itemDescription,
+        ipfsHash,
+        isMyAuction
       }
     }
 
-    let descriptions = await Promise.all(
+    const summaries = await Promise.all(
       loadedAuctions.map(auction => query(auction))
     )
 
     console.group('loadedAuction contracts')
     console.log('loadedAuctions', loadedAuctions)
-    console.log('Auction summaries', descriptions)
+    console.log('Auction summaries', summaries)
     console.groupEnd()
+
+    summaries.sort((a, b) => a - b)
+    this.setState({ summaries })
   }
 
   render() {
+    const { summaries } = this.state
+
+    if (summaries.length === 0) return <div>loading...</div>
     return (
       <React.Fragment>
         <div className="jumbotron">
-          <h1 className="display-4">Create a new auction</h1>
+          <h1 className="display-4">Auctions List!</h1>
           <p className="lead">Use this form to create your new auction</p>
         </div>
 
-        <form onSubmit={this.handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              className="form-control"
-              type="text"
-              id="name"
-              ref={this.inputName}
-              placeholder="enter name"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <input
-              className="form-control"
-              type="text"
-              id="description"
-              ref={this.inputDescription}
-              placeholder="enter description"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="captureFile">Picture</label>
-            <input
-              type="file"
-              id="captureFile"
-              className="form-control-file"
-              onChange={this.captureFile}
-            />
-          </div>
-          <button className="btn btn-primary" type="submit">
-            Submit
-          </button>
-        </form>
+        <table className="table table-dark">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Start</th>
+              <th scope="col">End</th>
+              <th scope="col">Name</th>
+              <th scope="col">Description</th>
+              <th scope="col">mine</th>
+            </tr>
+          </thead>
+          <tbody>
+            {summaries.map(
+              (
+                { startTime, endTime, itemName, itemDescription, isMyAuction },
+                index
+              ) => (
+                <tr key={startTime.toString() + index}>
+                  <th scope="row">{index}</th>
+                  <td>{startTime.toLocaleString()}</td>
+                  <td>{endTime.toLocaleString()}</td>
+                  <td>{itemName}</td>
+                  <td>{itemDescription}</td>
+                  <td>{isMyAuction ? 'MINE' : ''}</td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
       </React.Fragment>
     )
   }
@@ -104,13 +111,9 @@ class AuctionList extends Component {
 
 function mapStateToProps(state) {
   return {
-    accounts: state.accounts,
     defaultAccount: state.accounts[0],
-    contractInstance: state.contracts.auctionFactory,
+    auctionFactory: state.contracts.auctionFactory,
     auctionContract: state.contracts.auctionContract,
-    /* loadAuctionContractFromAddress:
-     *   state.contracts.loadAuctionContractFromAddress, */
-    ipfs: state.ipfs,
     web3: state.web3,
     web3Context: {
       from: state.accounts[0],

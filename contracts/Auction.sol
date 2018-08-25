@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 contract Auction {
@@ -69,7 +69,7 @@ contract Auction {
 
     constructor(
         address _beneficiary,
-		string _name,
+        string _name,
         string _description,
         string _ipfsHash,
         uint256 _auctionLength

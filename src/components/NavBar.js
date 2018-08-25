@@ -33,6 +33,9 @@ export default () => (
             <NavLink className="dropdown-item" to="/new">
               Create Auction
             </NavLink>
+            <NavLink className="dropdown-item" to="/list">
+              List All Auctions
+            </NavLink>
             <NavLink className="dropdown-item" to="/">
               SimpleStorage Example
             </NavLink>

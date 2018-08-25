@@ -64,14 +64,10 @@ class CreateAuction extends Component {
     )
 
     await this.getAllAuctions()
+  }
 
   async getAllAuctions() {
-    const {
-      defaultAccount,
-      web3Context,
-      contractInstance,
-      auctionContract
-    } = this.props
+    const { contractInstance, auctionContract } = this.props
     const auctions = await contractInstance.getAllAuctions.call()
     console.group('allAuctions query')
     console.log('auctions', auctions)
@@ -83,14 +79,18 @@ class CreateAuction extends Component {
     const loadedAuctions = await Promise.all(loadedAuctionsPromises)
 
     const query = async auction => {
+      const beneficiary = await auction.beneficiary.call()
       const endTime = await auction.auctionEndTime.call()
       const itemName = await auction.itemName.call()
       const itemDescription = await auction.itemDescription.call()
+      const ipfsHash = await auction.ipfsImage.call()
 
       return {
-        endTime: new Date(endTime.c * 1000),
+        beneficiary,
         itemName,
-        itemDescription
+        itemDescription,
+        ipfsHash,
+        endTime: new Date(endTime.c * 1000)
       }
     }
 
