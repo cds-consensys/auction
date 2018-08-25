@@ -9,7 +9,7 @@ import AuctionContract from './truffle-contracts/Auction.json'
 
 import Web3Load from './components/Web3Load'
 import SimpleStorage from './components/SimpleStorage'
-import CreateAuction from './components/Auction'
+import CreateAuction from './components/CreateAuction'
 import store from './store'
 import NavBar from './components/NavBar'
 
