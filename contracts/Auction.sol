@@ -2,9 +2,10 @@ pragma solidity ^0.4.24;
 
 
 contract Auction {
-    address public owner;
+    address public beneficiary;
+    string public itemName;
+    string public itemDescription;
     string public ipfsImage;
-    string public description;
 
     uint256 public auctionStartTime;
     uint256 public auctionEndTime;
@@ -17,15 +18,15 @@ contract Auction {
     // events
     event LogBid(uint256 highestBid);
     event LogAuctionCancelled(string reason);
-    event LogRedemption(account bidder, funds);
+    event LogRedemption(address bidder, uint256 funds);
 
-    modifier onlyOwner() {
-        require(msg.sender == owner);
+    modifier onlyBeneficiary() {
+        require(msg.sender == beneficiary);
         _;
     }
 
-    modifier onlyNotOwner() {
-        require(msg.sender != owner);
+    modifier onlyNotBeneficiary() {
+        require(msg.sender != beneficiary);
         _;
     }
 
@@ -61,27 +62,29 @@ contract Auction {
         _;
     }
 
-    modifier onlyBeatsBid(uint256 _bid) {
+    modifier onlyRaisesBid(uint256 _bid) {
         require(_bid > highestBid);
         _;
     }
 
     constructor(
-        address _seller,
-        string _ipfsImage,
+        address _beneficiary,
+		string _name,
         string _description,
-        uint256 _auctionTimeLimit
+        string _ipfsHash,
+        uint256 _auctionLength
     ) public {
-        owner = _seller;
-        ipfsImage = _ipfsImage;
-        description = _description;
+        beneficiary = _beneficiary;
+        itemName = _name;
+        ipfsImage = _ipfsHash;
+        itemDescription = _description;
         auctionStartTime = now;
-        auctionEndTime = auctionStartTime + _auctionTimeLimit;
+        auctionEndTime = auctionStartTime + _auctionLength;
         cancel = false;
     }
 
     function cancelAuction(string _reason)
-    public onlyOwner onlyNotCancelled
+    public onlyBeneficiary onlyNotCancelled
     {
         cancel = true;
         emit LogAuctionCancelled(_reason);
@@ -89,8 +92,8 @@ contract Auction {
 
     function placeBid(uint256 _bid)
     public payable
-    onlyNotCancelled onlyAfterStart onlyBeforeEnd onlyNotOwner
-    onlyNonZeroFunds onlyHasEnoughFunds(_bid) onlyBeatsBid(_bid)
+    onlyNotCancelled onlyAfterStart onlyBeforeEnd onlyNotBeneficiary
+    onlyNonZeroFunds onlyHasEnoughFunds(_bid) onlyRaisesBid(_bid)
     {
         uint256 previousBid = currentBids[msg.sender];
         uint256 increment = _bid - previousBid;
@@ -112,7 +115,7 @@ contract Auction {
             funds = currentBids[msg.sender];
             currentBids[msg.sender] = 0;
         } else {
-            if (msg.sender == owner) {
+            if (msg.sender == beneficiary) {
                 funds = highestBid;
             } else if (msg.sender == highestBidder) {
                 funds = 0;
@@ -121,6 +124,6 @@ contract Auction {
             }
         }
         msg.sender.transfer(funds);
-        LogRedemption(msg.sender, funds);
+        emit LogRedemption(msg.sender, funds);
     }
 }

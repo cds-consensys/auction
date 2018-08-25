@@ -4,7 +4,7 @@ const enfuraEndpoint = process.INFURA_ENDPOINT
 
 module.exports = {
   contracts_build_directory:
-    '/Volumes/Sofai/dev/consensys/cra-truffle/src/truffle-contracts',
+    '/Users/cds/dev/consensys/final/auction/src/truffle-contracts',
   networks: {
     development: {
       host: '127.0.0.1',
