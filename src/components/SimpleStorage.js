@@ -31,16 +31,14 @@ class SimpleStorage extends Component {
 
   async componentDidMount() {
     try {
-      this.web3 = this.props.web3
-      this.accounts = this.props.accounts
-      this.simpleStorageInstance = this.props.contracts.simpleStorage
+      const { simpleStorage } = this.props.contracts
 
       // set up events
       // https://github.com/ethereum/wiki/wiki/JavaScript-API#contract-events
       //
-      this.simpleStorageInstance.DataStored(this.contractEvent)
-      this.simpleStorageInstance.EtherStored(this.contractEvent)
-      this.simpleStorageInstance.DataStoredDoubled(this.contractEvent)
+      simpleStorage.DataStored(this.contractEvent)
+      simpleStorage.EtherStored(this.contractEvent)
+      simpleStorage.DataStoredDoubled(this.contractEvent)
 
       // get values on first load
       await this.getValue()
@@ -63,50 +61,49 @@ class SimpleStorage extends Component {
   }
 
   async setIPFSHash(hash) {
-    await this.simpleStorageInstance.setIPFSHash(hash, {
-      from: this.accounts[0],
-      gas: 1000000
-    })
+    const { web3Context } = this.props
+    const { simpleStorage } = this.props.contracts
+    await simpleStorage.setIPFSHash(hash, web3Context)
   }
 
   async getIPFSHash() {
-    let result = await this.simpleStorageInstance.getIPFSHash.call(
-      this.accounts[0]
-    )
+    const { defaultAccount } = this.props
+    const { simpleStorage } = this.props.contracts
+    let result = await simpleStorage.getIPFSHash.call(defaultAccount)
     this.setState({ ipfsHash: result })
   }
 
   // Value in ETH converted to wei
   async setValue(value, etherValue) {
-    await this.simpleStorageInstance.set(value, {
-      from: this.accounts[0],
-      value: this.web3.toWei(etherValue, 'ether'),
-      gas: 1000000
-    })
+    const { simpleStorage } = this.props.contracts
+    const web3Context = {
+      ...this.props.web3Context,
+      value: this.props.web3.toWei(etherValue, 'ether')
+    }
+    await simpleStorage.set(value, web3Context)
   }
 
   async getValue() {
-    let result = await this.simpleStorageInstance.get.call(this.accounts[0])
+    const { defaultAccount } = this.props
+    const { simpleStorage } = this.props.contracts
+    let result = await simpleStorage.get.call(defaultAccount)
     this.setState({ storageValue: result.c[0] })
   }
 
   async getDoubled() {
-    let result = await this.simpleStorageInstance.getDoubled.call(
-      this.accounts[0]
-    )
+    const { simpleStorage } = this.props.contracts
+    let result = await simpleStorage.getDoubled.call(this.props.defaultAccount)
     this.setState({ storageValueDoubled: result.c[0] })
   }
 
   async getFundsValue() {
-    this.web3.eth.getBalance(
-      this.simpleStorageInstance.address,
-      (error, result) => {
-        // msg.value is denoted in wei, need to convert back to ETH
-        this.setState({
-          storageFunds: this.web3.fromWei(result.toNumber(), 'ether')
-        })
-      }
-    )
+    const { simpleStorage } = this.props.contracts
+    this.props.web3.eth.getBalance(simpleStorage.address, (error, result) => {
+      // msg.value is denoted in wei, need to convert back to ETH
+      this.setState({
+        storageFunds: this.props.web3.fromWei(result.toNumber(), 'ether')
+      })
+    })
   }
 
   async handleSubmit(event) {
@@ -163,7 +160,7 @@ class SimpleStorage extends Component {
 
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
-            <label for="inputValue">Value</label>
+            <label htmlFor="inputValue">Value</label>
             <input
               className="form-control"
               type="text"
@@ -174,7 +171,7 @@ class SimpleStorage extends Component {
           </div>
 
           <div className="form-group">
-            <label for="inputEtherValue">Ether to send with tx</label>
+            <label htmlFor="inputEtherValue">Ether to send with tx</label>
             <input
               className="form-control"
               type="text"
@@ -210,12 +207,16 @@ class SimpleStorage extends Component {
 }
 
 function mapStateToProps(state) {
-  console.log('State', state)
   return {
     accounts: state.accounts,
+    defaultAccount: state.accounts[0],
     contracts: state.contracts,
     ipfs: state.ipfs,
-    web3: state.web3
+    web3: state.web3,
+    web3Context: {
+      from: state.accounts[0],
+      gas: 1000000
+    }
   }
 }
 

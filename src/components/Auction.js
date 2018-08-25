@@ -25,11 +25,8 @@ class CreateAuction extends Component {
 
   async componentDidMount() {
     try {
-      this.web3 = this.props.web3
-      this.accounts = this.props.accounts
-      this.auctionFactory = this.props.contracts.auctionFactory
-
-      this.auctionFactory.LogAuctionCreated(this.contractEvent)
+      this.props.contractInstance.LogAuctionCreated(this.contractEvent)
+      await this.getAllAuctions()
     } catch (error) {
       console.log(error)
     }
@@ -47,35 +44,44 @@ class CreateAuction extends Component {
     reader.readAsArrayBuffer(file)
     reader.onloadend = () => {
       this.setState({ buffer: Buffer(reader.result) })
-      console.log('buffer', this.state.buffer)
     }
   }
 
   async handleSubmit(event) {
     event.preventDefault()
-    const { ipfs } = this.props
+    const { ipfs, web3Context, contractInstance } = this.props
     const [result] = await ipfs.add(this.state.buffer)
     const { hash } = result
+    const oneHour = 60 * 60
 
+    console.group('handleSubmit')
     console.log('hash is ...', hash)
-    console.log('...handle submit')
     console.log('name', this.inputName.current.value)
     console.log('desc', this.inputDescription.current.value)
     console.log('state', this.state)
+    console.groupEnd()
 
-    await this.auctionFactory.createAuction(
+    await contractInstance.createAuction(
       this.props.accounts[0],
       this.inputName.current.value,
       this.inputDescription.current.value,
       hash,
-      3600,
-      {
-        from: this.props.accounts[0],
-        gas: 1000000
-      }
+      oneHour,
+      web3Context
     )
 
+    await this.getAllAuctions()
+
     /* function createAuction(address beneficiary, string itemName, string itemDescription, string ipfsHash, uint256 auctionLength) */
+  }
+
+  async getAllAuctions() {
+    const { defaultAccount, web3Context, contractInstance } = this.props
+
+    const auctions = await contractInstance.getAllAuctions.call()
+    console.group('allAuctions query')
+    console.log('auctions', auctions)
+    console.groupEnd()
   }
 
   render() {
@@ -88,28 +94,30 @@ class CreateAuction extends Component {
 
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
-            <label for="inputName">Name</label>
+            <label htmlFor="name">Name</label>
             <input
               className="form-control"
               type="text"
-              id="inputName"
+              id="name"
               ref={this.inputName}
               placeholder="enter name"
             />
           </div>
           <div className="form-group">
-            <label>Description</label>
+            <label htmlFor="description">Description</label>
             <input
               className="form-control"
               type="text"
+              id="description"
               ref={this.inputDescription}
               placeholder="enter description"
             />
           </div>
           <div className="form-group">
-            <label>Picture</label>
+            <label htmlFor="captureFile">Picture</label>
             <input
               type="file"
+              id="captureFile"
               className="form-control-file"
               onChange={this.captureFile}
             />
@@ -126,9 +134,14 @@ class CreateAuction extends Component {
 function mapStateToProps(state) {
   return {
     accounts: state.accounts,
-    contracts: state.contracts,
+    defaultAccount: state.accounts[0],
+    contractInstance: state.contracts.auctionFactory,
     ipfs: state.ipfs,
-    web3: state.web3
+    web3: state.web3,
+    web3Context: {
+      from: state.accounts[0],
+      gas: 1000000
+    }
   }
 }
 
