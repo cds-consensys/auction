@@ -2,9 +2,11 @@ const HDWalletProvider = require('truffle-hdwallet-provider')
 const mnemonic = process.env.MNEMONIC
 const enfuraEndpoint = process.INFURA_ENDPOINT
 
+const path = require('path')
+const contracts_build_directory = path.join(__dirname, 'src/truffle-contracts')
+
 module.exports = {
-  contracts_build_directory:
-    '/Users/marcus/dev/consensys/final/amal/src/truffle-contracts',
+  contracts_build_directory,
   networks: {
     development: {
       host: '127.0.0.1',
