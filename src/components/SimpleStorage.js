@@ -151,44 +151,60 @@ class SimpleStorage extends Component {
 
   render() {
     return (
-      <div className="App">
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Good to Go!</h1>
-              <h2>Smart Contract Example</h2>
-              <p>The stored value is: {this.state.storageValue}</p>
-              <p>The stored double is: {this.state.storageValueDoubled}</p>
-              <p>The stored funds are: {this.state.storageFunds} ETH</p>
-              <form onSubmit={this.handleSubmit}>
-                <label>Set value: </label>
-                <input type="text" ref={this.inputValue} />
-                <br />
-                <label>Ether to send with tx: </label>
-                <input type="text" ref={this.inputEtherValue} />
-                <br />
-                <input type="submit" value="Submit" />
-              </form>
+      <React.Fragment>
+        <div className="jumbotron">
+          <h1 className="display-4">Smart Contract Example</h1>
+          <p className="lead">...</p>
+        </div>
 
-              <hr />
+        <p>The stored value is: {this.state.storageValue}</p>
+        <p>The stored double is: {this.state.storageValueDoubled}</p>
+        <p>The stored funds are: {this.state.storageFunds} ETH</p>
 
-              <div className="pure-u-1-1">
-                <h1>Your Product Image</h1>
-                <p>IPFSHash stored on blockchain: {this.state.ipfsHash}</p>
-                <img
-                  src={`https://ipfs.io/ipfs/${this.state.ipfsHash}`}
-                  alt=""
-                />
-                <h2>Upload Image</h2>
-                <form onSubmit={this.handleFileSubmit}>
-                  <input type="file" onChange={this.captureFile} />
-                  <input type="submit" />
-                </form>
-              </div>
-            </div>
+        <form onSubmit={this.handleSubmit}>
+          <div className="form-group">
+            <label for="inputValue">Value</label>
+            <input
+              className="form-control"
+              type="text"
+              id="inputValue"
+              ref={this.inputValue}
+              placeholder="enter value"
+            />
           </div>
-        </main>
-      </div>
+
+          <div className="form-group">
+            <label for="inputEtherValue">Ether to send with tx</label>
+            <input
+              className="form-control"
+              type="text"
+              id="inputEtherValue"
+              ref={this.inputEtherValue}
+              placeholder="enter ether amount"
+            />
+          </div>
+          <button className="btn btn-primary" type="submit">
+            Submit
+          </button>
+        </form>
+
+        <hr />
+
+        <h1>Your Product Image</h1>
+        <p>IPFSHash stored on blockchain: {this.state.ipfsHash}</p>
+        <img src={`https://ipfs.io/ipfs/${this.state.ipfsHash}`} alt="" />
+        <h2>Upload Image</h2>
+
+        <form onSubmit={this.handleFileSubmit}>
+          <div className="form-group">
+            <label htmlFor="ipfsHash">Image</label>
+            <input id="ipfsHash" type="file" onChange={this.captureFile} />
+          </div>
+          <button className="btn btn-primary" type="submit">
+            Submit
+          </button>
+        </form>
+      </React.Fragment>
     )
   }
 }

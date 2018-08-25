@@ -29,9 +29,6 @@ class CreateAuction extends Component {
       this.accounts = this.props.accounts
       this.auctionFactory = this.props.contracts.auctionFactory
 
-      // set up events
-      // https://github.com/ethereum/wiki/wiki/JavaScript-API#contract-events
-      //
       this.auctionFactory.LogAuctionCreated(this.contractEvent)
     } catch (error) {
       console.log(error)
@@ -45,9 +42,7 @@ class CreateAuction extends Component {
   }
 
   captureFile(event) {
-    console.log('capture file')
     const file = event.target.files[0]
-    console.log('filename', file)
     const reader = new window.FileReader()
     reader.readAsArrayBuffer(file)
     reader.onloadend = () => {
@@ -63,7 +58,6 @@ class CreateAuction extends Component {
     const { hash } = result
 
     console.log('hash is ...', hash)
-
     console.log('...handle submit')
     console.log('name', this.inputName.current.value)
     console.log('desc', this.inputDescription.current.value)
@@ -81,27 +75,48 @@ class CreateAuction extends Component {
       }
     )
 
-    /*     function createAuction(address beneficiary, string itemName, string itemDescription, string ipfsHash, uint256 auctionLength)
- *
- *     await this.simpleStorageInstance.setIPFSHash(hash, {
- *       from: this.accounts[0],
- *       gas: 1000000
- *     }) */
+    /* function createAuction(address beneficiary, string itemName, string itemDescription, string ipfsHash, uint256 auctionLength) */
   }
 
   render() {
     return (
       <React.Fragment>
-        <h1>Enter details to create auction</h1>
+        <div className="jumbotron">
+          <h1 className="display-4">Create a new auction</h1>
+          <p className="lead">Use this form to create your new auction</p>
+        </div>
+
         <form onSubmit={this.handleSubmit}>
-          <label>Name:</label>
-          <input type="text" ref={this.inputName} />
-          <br />
-          <label>Description:</label>
-          <input type="text" ref={this.inputDescription} />
-          <br />
-          <input type="file" onChange={this.captureFile} />
-          <input type="submit" value="Submit" />
+          <div className="form-group">
+            <label for="inputName">Name</label>
+            <input
+              className="form-control"
+              type="text"
+              id="inputName"
+              ref={this.inputName}
+              placeholder="enter name"
+            />
+          </div>
+          <div className="form-group">
+            <label>Description</label>
+            <input
+              className="form-control"
+              type="text"
+              ref={this.inputDescription}
+              placeholder="enter description"
+            />
+          </div>
+          <div className="form-group">
+            <label>Picture</label>
+            <input
+              type="file"
+              className="form-control-file"
+              onChange={this.captureFile}
+            />
+          </div>
+          <button className="btn btn-primary" type="submit">
+            Submit
+          </button>
         </form>
       </React.Fragment>
     )

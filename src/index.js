@@ -20,7 +20,6 @@ ReactDOM.render(
       <Router>
         <div className="container">
           <NavBar />
-
           <Route exact path="/" component={SimpleStorage} />
           <Route path="/new" component={CreateAuction} />
         </div>
@@ -29,7 +28,3 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root')
 )
-
-/* <a href="/" className="pure-menu-heading pure-menu-link">
-             *   Truffle x
-             * </a> */
