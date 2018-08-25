@@ -76,11 +76,41 @@ class CreateAuction extends Component {
   }
 
   async getAllAuctions() {
-    const { defaultAccount, web3Context, contractInstance } = this.props
-
+    const {
+      defaultAccount,
+      web3Context,
+      contractInstance,
+      auctionContract
+    } = this.props
     const auctions = await contractInstance.getAllAuctions.call()
     console.group('allAuctions query')
     console.log('auctions', auctions)
+    console.groupEnd()
+
+    const loadedAuctionsPromises = auctions.map(address =>
+      auctionContract.at(address)
+    )
+    const loadedAuctions = await Promise.all(loadedAuctionsPromises)
+
+    const query = async auction => {
+      const endTime = await auction.auctionEndTime.call()
+      const itemName = await auction.itemName.call()
+      const itemDescription = await auction.itemDescription.call()
+
+      return {
+        endTime: new Date(endTime.c * 1000),
+        itemName,
+        itemDescription
+      }
+    }
+
+    let descriptions = await Promise.all(
+      loadedAuctions.map(auction => query(auction))
+    )
+
+    console.group('loadedAuction contracts')
+    console.log('loadedAuctions', loadedAuctions)
+    console.log('Auction summaries', descriptions)
     console.groupEnd()
   }
 
@@ -136,6 +166,9 @@ function mapStateToProps(state) {
     accounts: state.accounts,
     defaultAccount: state.accounts[0],
     contractInstance: state.contracts.auctionFactory,
+    auctionContract: state.contracts.auctionContract,
+    /* loadAuctionContractFromAddress:
+     *   state.contracts.loadAuctionContractFromAddress, */
     ipfs: state.ipfs,
     web3: state.web3,
     web3Context: {

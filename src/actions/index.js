@@ -1,4 +1,5 @@
 import getWeb3 from '../utils/getWeb3'
+import truffleContract from 'truffle-contract'
 
 import {
   WEB3_INITIALIZED,
@@ -23,17 +24,26 @@ export function initalizeDappState(contracts) {
       })
 
       // convert contract JSON to truffle contract instance
-      const contract = require('truffle-contract')
+      // const contract = require('truffle-contract')
 
-      // const contracts = [SimpleStorageContract, AuctionFactoryContract]
-      //
-      const [SimpleStorage, AuctionFactory] = contracts.map(contract)
-      // const simpleStorage = contract(contracts)
+      const [SimpleStorage, AuctionFactory, Auction] = contracts.map(
+        truffleContract
+      )
 
       SimpleStorage.setProvider(result.web3.currentProvider)
       AuctionFactory.setProvider(result.web3.currentProvider)
+      Auction.setProvider(result.web3.currentProvider)
 
-      let loadedContracts = {}
+      let loadedContracts = {
+        auctionContract: Auction
+      }
+
+      /* loadedContracts.loadAuctionContractFromAddress = address => {
+       *   const [AuctionBlob] = contracts.slice(-1)
+       *   const blobWithAddress = { ...AuctionBlob, address }
+       *   const Auction = truffleContract(blobWithAddress)
+       *   return Auction
+       * }  */
 
       SimpleStorage.deployed().then(storageContract => {
         loadedContracts.simpleStorage = storageContract

@@ -5,6 +5,7 @@ import { Provider } from 'react-redux'
 
 import SimpleStorageContract from './truffle-contracts/SimpleStorage.json'
 import AuctionFactoryContract from './truffle-contracts/AuctionFactory.json'
+import AuctionContract from './truffle-contracts/Auction.json'
 
 import Web3Load from './components/Web3Load'
 import SimpleStorage from './components/SimpleStorage'
@@ -12,7 +13,11 @@ import CreateAuction from './components/Auction'
 import store from './store'
 import NavBar from './components/NavBar'
 
-const contracts = [SimpleStorageContract, AuctionFactoryContract]
+const contracts = [
+  SimpleStorageContract,
+  AuctionFactoryContract,
+  AuctionContract
+]
 
 ReactDOM.render(
   <Provider store={store}>

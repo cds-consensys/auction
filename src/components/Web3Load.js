@@ -12,16 +12,18 @@ class Web3Load extends Component {
   render() {
     // The children components require web3 to function correctly and shouldn't be rendered
     // until web3 is initialized in the store
-    /* console.group('web3loader props')
-     * console.log('all props ', this.props)
-     * console.log('this.props.web3', this.props.web3)
-     * console.log('this.props.accounts', this.props.accounts)
-     * console.log('this.props.contracts', this.props.contracts)
-     * console.groupEnd() */
+    console.group('web3loader props')
+    console.log('all props ', this.props)
+    console.log('this.props.web3', this.props.web3)
+    console.log('this.props.accounts', this.props.accounts)
+    console.log('this.props.contracts', this.props.contracts)
+    console.groupEnd()
+
+    // Todo: This is a fragile check.
     if (
       this.props.web3 &&
       this.props.accounts &&
-      Object.keys(this.props.contracts).length === 2 &&
+      Object.keys(this.props.contracts).length === 3 &&
       this.props.ipfs
     ) {
       return Children.only(this.props.children)
