@@ -27,20 +27,12 @@ class CreateAuction extends Component {
     try {
       this.web3 = this.props.web3
       this.accounts = this.props.accounts
-      this.auctionFactory = this.props.contracts[0]
+      this.auctionFactory = this.props.contracts.auctionFactory
 
       // set up events
       // https://github.com/ethereum/wiki/wiki/JavaScript-API#contract-events
       //
-      this.simpleStorageInstance.DataStored(this.contractEvent)
-      this.simpleStorageInstance.EtherStored(this.contractEvent)
-      this.simpleStorageInstance.DataStoredDoubled(this.contractEvent)
-
-      // get values on first load
-      await this.getValue()
-      await this.getDoubled()
-      await this.getFundsValue()
-      await this.getIPFSHash()
+      this.auctionFactory.LogAuctionCreated(this.contractEvent)
     } catch (error) {
       console.log(error)
     }
@@ -50,10 +42,6 @@ class CreateAuction extends Component {
     // Whenver an event is emitted, then do a read to update values
     // Use this event as a trigger to invoke the get value
     console.log(JSON.stringify(value, null, 2))
-    await this.getValue()
-    await this.getFundsValue()
-    await this.getDoubled()
-    await this.getIPFSHash()
   }
 
   captureFile(event) {
@@ -68,12 +56,37 @@ class CreateAuction extends Component {
     }
   }
 
-  handleSubmit(event) {
+  async handleSubmit(event) {
     event.preventDefault()
+    const { ipfs } = this.props
+    const [result] = await ipfs.add(this.state.buffer)
+    const { hash } = result
+
+    console.log('hash is ...', hash)
+
     console.log('...handle submit')
     console.log('name', this.inputName.current.value)
     console.log('desc', this.inputDescription.current.value)
     console.log('state', this.state)
+
+    await this.auctionFactory.createAuction(
+      this.props.accounts[0],
+      this.inputName.current.value,
+      this.inputDescription.current.value,
+      hash,
+      3600,
+      {
+        from: this.props.accounts[0],
+        gas: 1000000
+      }
+    )
+
+    /*     function createAuction(address beneficiary, string itemName, string itemDescription, string ipfsHash, uint256 auctionLength)
+ *
+ *     await this.simpleStorageInstance.setIPFSHash(hash, {
+ *       from: this.accounts[0],
+ *       gas: 1000000
+ *     }) */
   }
 
   render() {
