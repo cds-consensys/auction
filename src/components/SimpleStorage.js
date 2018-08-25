@@ -132,7 +132,6 @@ class SimpleStorage extends Component {
       console.log('buffer', this.state.buffer)
     }
   }
-
   handleFileSubmit(event) {
     event.preventDefault()
     const { ipfs } = this.props

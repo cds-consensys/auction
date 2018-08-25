@@ -1,35 +1,28 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { Provider } from 'react-redux'
 
 import SimpleStorageContract from './truffle-contracts/SimpleStorage.json'
+import AuctionFactoryContract from './truffle-contracts/AuctionFactory.json'
+
 import Web3Load from './components/Web3Load'
-import App from './components/App'
 import SimpleStorage from './components/SimpleStorage'
 import CreateAuction from './components/Auction'
 import store from './store'
+import NavBar from './components/NavBar'
+
+const contracts = [SimpleStorageContract, AuctionFactoryContract]
 
 ReactDOM.render(
   <Provider store={store}>
-    <Web3Load dappContracts={SimpleStorageContract}>
+    <Web3Load dappContracts={contracts}>
       <Router>
-        <div className="App">
-          <ul>
-            <NavLink to="/" className="navbar pure-menu pure-menu-horizontal">
-              SimpleStorage
-            </NavLink>
-            <NavLink
-              to="/new"
-              className="navbar pure-menu pure-menu-horizontal">
-              New Auction
-            </NavLink>
-          </ul>
+        <div className="container">
+          <NavBar />
 
-          <main className="container">
-            <Route exact path="/" component={SimpleStorage} />
-            <Route path="/new" component={CreateAuction} />
-          </main>
+          <Route exact path="/" component={SimpleStorage} />
+          <Route path="/new" component={CreateAuction} />
         </div>
       </Router>
     </Web3Load>
