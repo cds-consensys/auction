@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+
 import CircularProgressbar from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
+
+import { AuctionCreated as AuctionCreatedAction } from '../actions'
 
 class CreateAuction extends Component {
   constructor() {
@@ -20,21 +23,27 @@ class CreateAuction extends Component {
 
     this.captureFile = this.captureFile.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.auctionCreatedListener = this.auctionCreatedListener.bind(this)
   }
 
   async componentDidMount() {
     try {
-      this.props.contractInstance.LogAuctionCreated(this.contractEvent)
-      await this.getAllAuctions()
+      this.props.contractInstance.LogAuctionCreated(this.auctionCreatedListener)
     } catch (error) {
       console.log(error)
     }
   }
 
-  async contractEvent(err, value) {
-    // Whenver an event is emitted, then do a read to update values
-    // Use this event as a trigger to invoke the get value
+  async auctionCreatedListener(err, value) {
     console.log(JSON.stringify(value, null, 2))
+    console.log('listener props: ', this.props)
+
+    const { args } = value
+    const { auction: address, beneficiary } = args
+    const { defaultAccount, AuctionCreatedAction } = this.props
+
+    console.log(defaultAccount, beneficiary, address)
+    AuctionCreatedAction(defaultAccount, beneficiary, address)
   }
 
   captureFile(event) {
@@ -80,7 +89,6 @@ class CreateAuction extends Component {
     progress.percent = 75
     this.setState({ progress })
 
-    await this.getAllAuctions()
     progress.percent = 75
     this.setState({ progress })
 
@@ -94,44 +102,6 @@ class CreateAuction extends Component {
       ipfsHash: '',
       progress
     })
-  }
-
-  async getAllAuctions() {
-    const { contractInstance, auctionContract } = this.props
-    const auctions = await contractInstance.getAllAuctions.call()
-    console.group('allAuctions query')
-    console.log('auctions', auctions)
-    console.groupEnd()
-
-    const loadedAuctionsPromises = auctions.map(address =>
-      auctionContract.at(address)
-    )
-    const loadedAuctions = await Promise.all(loadedAuctionsPromises)
-
-    const query = async auction => {
-      const beneficiary = await auction.beneficiary.call()
-      const endTime = await auction.auctionEndTime.call()
-      const itemName = await auction.itemName.call()
-      const itemDescription = await auction.itemDescription.call()
-      const ipfsHash = await auction.ipfsImage.call()
-
-      return {
-        beneficiary,
-        itemName,
-        itemDescription,
-        ipfsHash,
-        endTime: new Date(endTime.c * 1000)
-      }
-    }
-
-    let descriptions = await Promise.all(
-      loadedAuctions.map(auction => query(auction))
-    )
-
-    console.group('loadedAuction contracts')
-    console.log('loadedAuctions', loadedAuctions)
-    console.log('Auction summaries', descriptions)
-    console.groupEnd()
   }
 
   render() {
@@ -192,7 +162,7 @@ class CreateAuction extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = state => {
   return {
     accounts: state.accounts,
     defaultAccount: state.accounts[0],
@@ -207,4 +177,10 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps)(CreateAuction)
+const mapDispatchToProps = dispatch => {
+  return {
+    AuctionCreatedAction: (...args) => dispatch(AuctionCreatedAction(...args))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateAuction)

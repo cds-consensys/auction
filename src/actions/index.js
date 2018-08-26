@@ -14,8 +14,13 @@ import {
 } from './types'
 
 /* helper function to transform auction addresses to a useful list of objects
+ * Todo: this should move to a better place, it is not an action.
  */
-const loadAllAuctions = async (auctions, auctionContract, defaultAccount) => {
+export const loadAllAuctions = async (
+  auctions,
+  auctionContract,
+  defaultAccount
+) => {
   console.log('getAllAuctions...empty right now')
 
   const loadedAuctionsPromises = auctions.map(address =>
@@ -159,11 +164,10 @@ export const AuctionsLoaded = (me, auctions) => ({
   me
 })
 
-export const AuctionCreated = (me, benefactor, address, endTime) => ({
+export const AuctionCreated = (me, beneficiary, address) => ({
   type: AUCTION_CREATED,
-  benefactor,
+  beneficiary,
   address,
-  endTime,
   me
 })
 

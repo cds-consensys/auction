@@ -1,35 +1,46 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import moment from 'moment'
+import { AuctionCreated as AuctionCreatedAction } from '../actions'
+import { getAuctionSummary } from '../utils'
 
 class AuctionList extends Component {
   constructor() {
     super()
     this.state = { summaries: [] }
 
-    this.contractEvent = this.contractEvent.bind(this)
+    this.auctionCreatedListener = this.auctionCreatedListener.bind(this)
   }
 
   async componentDidMount() {
     const { auctionFactory } = this.props
 
     try {
-      auctionFactory.LogAuctionCreated(this.contractEvent)
-      this.getAllAuctions()
+      auctionFactory.LogAuctionCreated(this.auctionCreatedListener)
     } catch (error) {
       console.log(error)
     }
   }
 
-  async contractEvent(err, value) {
-    // Whenver an event is emitted, then do a read to update values
-    // Use this event as a trigger to invoke the get value
+  async auctionCreatedListener(err, value) {
     console.log(JSON.stringify(value, null, 2))
+    console.log('listener props: ', this.props)
+
+    const { args } = value
+    const { auction: address, beneficiary } = args
+    const { defaultAccount, AuctionCreatedAction } = this.props
+
+    const auctionContract = await this.props.auctionContract.at(address)
+
+    const summary = await getAuctionSummary(auctionContract, defaultAccount)
+    console.log(defaultAccount, beneficiary, address)
+    console.log(auctionContract)
+    console.log('summary', summary)
+    AuctionCreatedAction(defaultAccount, beneficiary, summary)
   }
 
   render() {
     const { auctions } = this.props
-
     return (
       <React.Fragment>
         <h1 className="display-4">Your Auctions</h1>
@@ -86,4 +97,10 @@ const mapStateToProps = state => {
   }
 }
 
-export default connect(mapStateToProps)(AuctionList)
+const mapDispatchToProps = dispatch => {
+  return {
+    AuctionCreatedAction: (...args) => dispatch(AuctionCreatedAction(...args))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AuctionList)
