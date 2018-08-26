@@ -24,15 +24,26 @@ class CreateAuction extends Component {
 
     this.captureFile = this.captureFile.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+
     this.auctionCreatedListener = this.auctionCreatedListener.bind(this)
+    this.web3events = []
   }
 
   async componentDidMount() {
     try {
-      this.props.contractInstance.LogAuctionCreated(this.auctionCreatedListener)
+      const event = this.props.contractInstance.LogAuctionCreated(
+        this.auctionCreatedListener
+      )
+      this.web3events.push[event]
     } catch (error) {
       console.log(error)
     }
+  }
+
+  componentWillUnmount() {
+    console.log('CreateAuction::Stop watching web3 events')
+    this.web3events.forEach(event => event.stopWatching())
+    this.web3events = []
   }
 
   async auctionCreatedListener(err, value) {

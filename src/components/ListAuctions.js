@@ -10,16 +10,26 @@ class AuctionList extends Component {
     this.state = { summaries: [] }
 
     this.auctionCreatedListener = this.auctionCreatedListener.bind(this)
+    this.web3events = []
   }
 
   async componentDidMount() {
     const { auctionFactory } = this.props
 
     try {
-      auctionFactory.LogAuctionCreated(this.auctionCreatedListener)
+      const event = auctionFactory.LogAuctionCreated(
+        this.auctionCreatedListener
+      )
+      this.web3events.push[event]
     } catch (error) {
       console.log(error)
     }
+  }
+
+  componentWillUnmount() {
+    console.log('AuctionList::Stop watching web3 events')
+    this.web3events.forEach(event => event.stopWatching())
+    this.web3events = []
   }
 
   async auctionCreatedListener(err, value) {
