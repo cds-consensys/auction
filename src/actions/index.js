@@ -38,13 +38,6 @@ export function initalizeDappState(contracts) {
         auctionContract: Auction
       }
 
-      /* loadedContracts.loadAuctionContractFromAddress = address => {
-       *   const [AuctionBlob] = contracts.slice(-1)
-       *   const blobWithAddress = { ...AuctionBlob, address }
-       *   const Auction = truffleContract(blobWithAddress)
-       *   return Auction
-       * }  */
-
       SimpleStorage.deployed().then(storageContract => {
         loadedContracts.simpleStorage = storageContract
         console.log('SimpleStorage contract loaded')
