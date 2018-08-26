@@ -78,7 +78,6 @@ class AuctionList extends Component {
   render() {
     const { summaries } = this.state
 
-    if (summaries.length === 0) return <div>loading...</div>
     return (
       <React.Fragment>
         <div className="jumbotron">

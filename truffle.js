@@ -1,6 +1,6 @@
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const mnemonic = process.env.MNEMONIC
-const enfuraEndpoint = process.INFURA_ENDPOINT
+const infuraEndpoint = process.INFURA_ENDPOINT
 
 const path = require('path')
 const contracts_build_directory = path.join(__dirname, 'src/truffle-contracts')
@@ -15,7 +15,7 @@ module.exports = {
     },
     rinkeby: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, enfuraEndpoint)
+        return new HDWalletProvider(mnemonic, infuraEndpoint)
       },
       network_id: 4
     }
