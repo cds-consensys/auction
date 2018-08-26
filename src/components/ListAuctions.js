@@ -25,102 +25,56 @@ class AuctionList extends Component {
     // Whenver an event is emitted, then do a read to update values
     // Use this event as a trigger to invoke the get value
     console.log(JSON.stringify(value, null, 2))
-    this.getAllAuctions()
-  }
-
-  async getAllAuctions() {
-    const { auctionFactory, auctionContract, defaultAccount } = this.props
-
-    const auctions = await auctionFactory.getAllAuctions.call()
-    console.group('allAuctions query')
-    console.log('auctions', auctions)
-    console.groupEnd()
-
-    const loadedAuctionsPromises = auctions.map(address =>
-      auctionContract.at(address)
-    )
-    const loadedAuctions = await Promise.all(loadedAuctionsPromises)
-
-    const query = async auction => {
-      const startTime = await auction.auctionStartTime.call()
-      const endTime = await auction.auctionEndTime.call()
-      const itemName = await auction.itemName.call()
-      const itemDescription = await auction.itemDescription.call()
-      const ipfsHash = await auction.ipfsImage.call()
-      const beneficiary = await auction.beneficiary.call()
-      const isMyAuction = beneficiary === defaultAccount
-
-      return {
-        beneficiary,
-        auctionInstance: auction,
-        startTime: new Date(startTime.c * 1000),
-        endTime: new Date(endTime.c * 1000),
-        itemName,
-        itemDescription,
-        ipfsHash,
-        isMyAuction
-      }
-    }
-
-    const summaries = await Promise.all(
-      loadedAuctions.map(auction => query(auction))
-    )
-
-    console.group('loadedAuction contracts')
-    console.log('loadedAuctions', loadedAuctions)
-    console.log('Auction summaries', summaries)
-    console.groupEnd()
-
-    summaries.sort((a, b) => b - a)
-    this.setState({ summaries })
   }
 
   render() {
-    const { summaries } = this.state
+    const { auctions } = this.props
 
     return (
       <React.Fragment>
-        <div className="jumbotron">
-          <h1 className="display-4">Auctions List!</h1>
-          <p className="lead">Use this form to create your new auction</p>
-        </div>
+        <h1 className="display-4">Your Auctions</h1>
+        <AuctionTable auctions={auctions.myAuctions} />
 
-        <table className="table table-dark table-striped table-hover">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Start</th>
-              <th scope="col">End</th>
-              <th scope="col">Name</th>
-              <th scope="col">Description</th>
-              <th scope="col">mine</th>
-            </tr>
-          </thead>
-          <tbody>
-            {summaries.map(
-              (
-                { startTime, endTime, itemName, itemDescription, isMyAuction },
-                index
-              ) => (
-                <tr key={startTime.toString() + index}>
-                  <th scope="row">{index}</th>
-                  <td>{moment(startTime).fromNow()}</td>
-                  <td>{moment(endTime).fromNow()}</td>
-                  <td>{itemName}</td>
-                  <td>{itemDescription}</td>
-                  <td>{isMyAuction ? 'MINE' : ''}</td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
+        <h1 className="display-4">Other Auctions</h1>
+        <AuctionTable auctions={auctions.otherAuctions} />
       </React.Fragment>
     )
   }
 }
 
-function mapStateToProps(state) {
+const AuctionTable = ({ auctions }) => (
+  <table className="table table-dark table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Start</th>
+        <th scope="col">End</th>
+        <th scope="col">Name</th>
+        <th scope="col">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {auctions.map(
+        (
+          { startTime, endTime, itemName, itemDescription, isMyAuction },
+          index
+        ) => (
+          <tr key={startTime.toString() + index}>
+            <th scope="row">{index}</th>
+            <td>{moment(startTime).fromNow()}</td>
+            <td>{moment(endTime).fromNow()}</td>
+            <td>{itemName}</td>
+            <td>{itemDescription}</td>
+          </tr>
+        )
+      )}
+    </tbody>
+  </table>
+)
+
+const mapStateToProps = state => {
   return {
+    auctions: state.auctions,
     defaultAccount: state.accounts[0],
     auctionFactory: state.contracts.auctionFactory,
     auctionContract: state.contracts.auctionContract,

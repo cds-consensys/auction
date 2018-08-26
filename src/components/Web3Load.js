@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { initalizeDappState } from '../actions'
 
 class Web3Load extends Component {
-  componentWillMount() {
+  componentDidMount() {
     // thunk action creator that instantiates web3, contract, and accounts
     this.props.initalizeDappState(this.props.dappContracts)
   }
@@ -12,12 +12,12 @@ class Web3Load extends Component {
   render() {
     // The children components require web3 to function correctly and shouldn't be rendered
     // until web3 is initialized in the store
-    console.group('web3loader props')
-    console.log('all props ', this.props)
-    console.log('this.props.web3', this.props.web3)
-    console.log('this.props.accounts', this.props.accounts)
-    console.log('this.props.contracts', this.props.contracts)
-    console.groupEnd()
+    /* console.group('web3loader props')
+     * console.log('all props ', this.props)
+     * console.log('this.props.web3', this.props.web3)
+     * console.log('this.props.accounts', this.props.accounts)
+     * console.log('this.props.contracts', this.props.contracts)
+     * console.groupEnd() */
 
     // Todo: This is a fragile check.
     if (

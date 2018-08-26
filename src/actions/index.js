@@ -13,18 +13,64 @@ import {
   AUCTION_REDEEMED
 } from './types'
 
+/* helper function to transform auction addresses to a useful list of objects
+ */
+const loadAllAuctions = async (auctions, auctionContract, defaultAccount) => {
+  console.log('getAllAuctions...empty right now')
+
+  const loadedAuctionsPromises = auctions.map(address =>
+    auctionContract.at(address)
+  )
+  const loadedAuctions = await Promise.all(loadedAuctionsPromises)
+
+  const query = async auction => {
+    const startTime = await auction.auctionStartTime.call()
+    const endTime = await auction.auctionEndTime.call()
+    const itemName = await auction.itemName.call()
+    const itemDescription = await auction.itemDescription.call()
+    const ipfsHash = await auction.ipfsImage.call()
+    const beneficiary = await auction.beneficiary.call()
+    const isMyAuction = beneficiary === defaultAccount
+
+    return {
+      beneficiary,
+      auctionInstance: auction,
+      startTime: new Date(startTime.c * 1000),
+      endTime: new Date(endTime.c * 1000),
+      itemName,
+      itemDescription,
+      ipfsHash,
+      isMyAuction
+    }
+  }
+
+  const summaries = await Promise.all(
+    loadedAuctions.map(auction => query(auction))
+  )
+
+  console.group('loadedAuction contracts')
+  console.log('loadedAuctions', loadedAuctions)
+  console.log('Auction summaries', summaries)
+  console.groupEnd()
+
+  summaries.sort((a, b) => b - a)
+  return summaries
+}
+
 export function initalizeDappState(contracts) {
   return dispatch => {
     getWeb3.then(result => {
       // send action to save web3 instance to store
       dispatch(web3Initialized(result))
 
+      // hacky need for call to loadAllAccounts below
+      let defaultAccount
+
       //use web3 instance to get accounts
-      console.log('getAccounts web3...')
       result.web3.eth.getAccounts((err, accounts) => {
         if (err) throw err
+        defaultAccount = accounts[0]
         // send action to save accounts to store
-        console.log('accounts sent to store: ', accounts)
         dispatch(accountsInitialized(accounts))
       })
 
@@ -45,13 +91,24 @@ export function initalizeDappState(contracts) {
 
       SimpleStorage.deployed().then(storageContract => {
         loadedContracts.simpleStorage = storageContract
-        console.log('SimpleStorage contract loaded')
 
-        AuctionFactory.deployed().then(auctionFactoryContract => {
+        AuctionFactory.deployed().then(async auctionFactoryContract => {
           loadedContracts.auctionFactory = auctionFactoryContract
-          console.log('AuctionFactory contract loaded')
-          console.log('truffle contract sent to store: ', loadedContracts)
           dispatch(contractsInitialized(loadedContracts))
+
+          // load the actions
+          const auctions = await auctionFactoryContract.getAllAuctions.call()
+          const transformedAuctions = await loadAllAuctions(
+            auctions,
+            Auction,
+            defaultAccount
+          )
+          /* console.group('allAuctions query')
+           * console.log('auctions', auctions)
+           * console.log('transformed', transformedAuctions)
+           * console.groupEnd() */
+
+          dispatch(AuctionsLoaded(defaultAccount, transformedAuctions))
         })
       })
 
@@ -59,6 +116,9 @@ export function initalizeDappState(contracts) {
       const ipfsAPI = require('ipfs-api')
       const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
       dispatch(ipfsInitialized(ipfs))
+
+      // load auctions
+      console.log('main props', this.props)
     })
   }
 }
@@ -93,9 +153,10 @@ export function ipfsInitialized(results) {
 
 // contract events
 
-export const AuctionsLoaded = auctions => ({
+export const AuctionsLoaded = (me, auctions) => ({
   type: AUCTIONS_LOADED,
-  auctions
+  auctions,
+  me
 })
 
 export const AuctionCreated = (me, benefactor, address, endTime) => ({
