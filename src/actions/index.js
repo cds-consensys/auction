@@ -5,17 +5,26 @@ import {
   WEB3_INITIALIZED,
   ACCOUNTS_INITIALIZED,
   CONTRACTS_INITIALIZED,
-  IPFS_INITIALIZED
+  IPFS_INITIALIZED,
+  AUCTIONS_LOADED,
+  AUCTION_CREATED,
+  AUCTION_CANCELLED,
+  AUCTION_BID_PLACED,
+  AUCTION_REDEEMED
 } from './types'
 
 export function initalizeDappState(contracts) {
   return dispatch => {
     getWeb3.then(result => {
       // send action to save web3 instance to store
-      console.log('web3 instance sent to store: ', result)
-      dispatch(web3Initialized(result))
+      try {
+        dispatch(web3Initialized(result))
+      } catch (eror) {
+        console.log('oopsie', eror)
+      }
 
       //use web3 instance to get accounts
+      console.log('getAccounts web3...')
       result.web3.eth.getAccounts((err, accounts) => {
         if (err) throw err
         // send action to save accounts to store
@@ -85,3 +94,38 @@ export function ipfsInitialized(results) {
     payload: results
   }
 }
+
+// contract events
+
+export const AuctionsLoaded = auctions => ({
+  type: AUCTIONS_LOADED,
+  auctions
+})
+
+export const AuctionCreated = (me, benefactor, address, endTime) => ({
+  type: AUCTION_CREATED,
+  benefactor,
+  address,
+  endTime,
+  me
+})
+
+export const AuctionCancelled = (me, address) => ({
+  type: AUCTION_CANCELLED,
+  address,
+  me
+})
+
+export const AuctionBidPlaced = (me, address, bid) => ({
+  type: AUCTION_BID_PLACED,
+  address,
+  bid,
+  me
+})
+
+export const AuctionBidRedeemed = (me, address, bid) => ({
+  type: AUCTION_REDEEMED,
+  address,
+  bid,
+  me
+})
