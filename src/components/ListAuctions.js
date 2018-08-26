@@ -1,20 +1,31 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import moment from 'moment'
 
 class AuctionList extends Component {
   constructor() {
     super()
-
     this.state = { summaries: [] }
+
+    this.contractEvent = this.contractEvent.bind(this)
   }
 
   async componentDidMount() {
+    const { auctionFactory } = this.props
+
     try {
-      console.log('componentDidMount')
+      auctionFactory.LogAuctionCreated(this.contractEvent)
       this.getAllAuctions()
     } catch (error) {
       console.log(error)
     }
+  }
+
+  async contractEvent(err, value) {
+    // Whenver an event is emitted, then do a read to update values
+    // Use this event as a trigger to invoke the get value
+    console.log(JSON.stringify(value, null, 2))
+    this.getAllAuctions()
   }
 
   async getAllAuctions() {
@@ -60,7 +71,7 @@ class AuctionList extends Component {
     console.log('Auction summaries', summaries)
     console.groupEnd()
 
-    summaries.sort((a, b) => a - b)
+    summaries.sort((a, b) => b - a)
     this.setState({ summaries })
   }
 
@@ -75,7 +86,7 @@ class AuctionList extends Component {
           <p className="lead">Use this form to create your new auction</p>
         </div>
 
-        <table className="table table-dark">
+        <table className="table table-dark table-striped table-hover">
           <thead>
             <tr>
               <th scope="col">#</th>
@@ -94,8 +105,8 @@ class AuctionList extends Component {
               ) => (
                 <tr key={startTime.toString() + index}>
                   <th scope="row">{index}</th>
-                  <td>{startTime.toLocaleString()}</td>
-                  <td>{endTime.toLocaleString()}</td>
+                  <td>{moment(startTime).fromNow()}</td>
+                  <td>{moment(endTime).fromNow()}</td>
                   <td>{itemName}</td>
                   <td>{itemDescription}</td>
                   <td>{isMyAuction ? 'MINE' : ''}</td>
