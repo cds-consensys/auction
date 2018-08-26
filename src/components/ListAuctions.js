@@ -23,19 +23,13 @@ class AuctionList extends Component {
   }
 
   async auctionCreatedListener(err, value) {
-    console.log(JSON.stringify(value, null, 2))
-    console.log('listener props: ', this.props)
-
     const { args } = value
     const { auction: address, beneficiary } = args
-    const { defaultAccount, AuctionCreatedAction } = this.props
+    const { defaultAccount, AuctionCreatedAction, auctionContract } = this.props
 
-    const auctionContract = await this.props.auctionContract.at(address)
+    const auctionInstance = await auctionContract.at(address)
 
-    const summary = await getAuctionSummary(auctionContract, defaultAccount)
-    console.log(defaultAccount, beneficiary, address)
-    console.log(auctionContract)
-    console.log('summary', summary)
+    const summary = await getAuctionSummary(auctionInstance, defaultAccount)
     AuctionCreatedAction(defaultAccount, beneficiary, summary)
   }
 

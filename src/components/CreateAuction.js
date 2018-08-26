@@ -5,6 +5,7 @@ import CircularProgressbar from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
 
 import { AuctionCreated as AuctionCreatedAction } from '../actions'
+import { getAuctionSummary } from '../utils'
 
 class CreateAuction extends Component {
   constructor() {
@@ -35,15 +36,13 @@ class CreateAuction extends Component {
   }
 
   async auctionCreatedListener(err, value) {
-    console.log(JSON.stringify(value, null, 2))
-    console.log('listener props: ', this.props)
-
     const { args } = value
     const { auction: address, beneficiary } = args
-    const { defaultAccount, AuctionCreatedAction } = this.props
+    const { defaultAccount, AuctionCreatedAction, auctionContract } = this.props
 
-    console.log(defaultAccount, beneficiary, address)
-    AuctionCreatedAction(defaultAccount, beneficiary, address)
+    const auctionInstance = await auctionContract.at(address)
+    const summary = await getAuctionSummary(auctionInstance, defaultAccount)
+    AuctionCreatedAction(defaultAccount, beneficiary, summary)
   }
 
   captureFile(event) {
@@ -70,13 +69,6 @@ class CreateAuction extends Component {
 
     const { hash } = result
     const oneHour = 60 * 60
-
-    console.group('handleSubmit')
-    console.log('hash is ...', hash)
-    console.log('name', this.inputName.current.value)
-    console.log('desc', this.inputDescription.current.value)
-    console.log('state', this.state)
-    console.groupEnd()
 
     await contractInstance.createAuction(
       this.props.accounts[0],
