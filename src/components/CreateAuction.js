@@ -1,12 +1,18 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import CircularProgressbar from 'react-circular-progressbar'
+import 'react-circular-progressbar/dist/styles.css'
 
 class CreateAuction extends Component {
   constructor() {
     super()
     this.state = {
       buffer: null,
-      ipfsHash: ''
+      ipfsHash: '',
+      progress: {
+        outstanding: false,
+        percent: 0
+      }
     }
 
     this.inputName = React.createRef()
@@ -42,8 +48,17 @@ class CreateAuction extends Component {
 
   async handleSubmit(event) {
     event.preventDefault()
+    const progress = {
+      outstanding: true,
+      percent: 0
+    }
+    this.setState({ progress })
+
     const { ipfs, web3Context, contractInstance } = this.props
     const [result] = await ipfs.add(this.state.buffer)
+    progress.percent = 45
+    this.setState({ progress })
+
     const { hash } = result
     const oneHour = 60 * 60
 
@@ -62,8 +77,23 @@ class CreateAuction extends Component {
       oneHour,
       web3Context
     )
+    progress.percent = 75
+    this.setState({ progress })
 
     await this.getAllAuctions()
+    progress.percent = 75
+    this.setState({ progress })
+
+    this.inputName.current.value = ''
+    this.inputDescription.current.value = ''
+
+    progress.outstanding = false
+    progress.percent = 0
+    this.setState({
+      buffer: null,
+      ipfsHash: '',
+      progress
+    })
   }
 
   async getAllAuctions() {
@@ -105,47 +135,58 @@ class CreateAuction extends Component {
   }
 
   render() {
+    const { progress } = this.state
     return (
       <React.Fragment>
-        <div className="jumbotron">
-          <h1 className="display-4">Create a new auction</h1>
-          <p className="lead">Use this form to create your new auction</p>
-        </div>
+        <h1 className="display-4">Create a new auction</h1>
+        <div className="row">
+          <div className="col-sm-6">
+            <form onSubmit={this.handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Name</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  id="name"
+                  ref={this.inputName}
+                  placeholder="enter name"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Description</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  id="description"
+                  ref={this.inputDescription}
+                  placeholder="enter description"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="captureFile">Picture</label>
+                <input
+                  type="file"
+                  id="captureFile"
+                  className="form-control-file"
+                  onChange={this.captureFile}
+                />
+              </div>
 
-        <form onSubmit={this.handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              className="form-control"
-              type="text"
-              id="name"
-              ref={this.inputName}
-              placeholder="enter name"
-            />
+              {!progress.outstanding && (
+                <button className="btn btn-primary" type="submit">
+                  Submit
+                </button>
+              )}
+
+              {progress.outstanding && (
+                <CircularProgressbar
+                  percentage={progress.percent}
+                  text={`${progress.percent}`}
+                />
+              )}
+            </form>
           </div>
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <input
-              className="form-control"
-              type="text"
-              id="description"
-              ref={this.inputDescription}
-              placeholder="enter description"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="captureFile">Picture</label>
-            <input
-              type="file"
-              id="captureFile"
-              className="form-control-file"
-              onChange={this.captureFile}
-            />
-          </div>
-          <button className="btn btn-primary" type="submit">
-            Submit
-          </button>
-        </form>
+        </div>
       </React.Fragment>
     )
   }
