@@ -17,11 +17,7 @@ export function initalizeDappState(contracts) {
   return dispatch => {
     getWeb3.then(result => {
       // send action to save web3 instance to store
-      try {
-        dispatch(web3Initialized(result))
-      } catch (eror) {
-        console.log('oopsie', eror)
-      }
+      dispatch(web3Initialized(result))
 
       //use web3 instance to get accounts
       console.log('getAccounts web3...')
