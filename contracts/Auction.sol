@@ -12,7 +12,9 @@ contract Auction {
 
     uint256 public highestBid;
     address public highestBidder;
+
     bool public cancel;
+    bool public beneficiaryRedeemed;
     mapping (address => uint256) private currentBids;
 
     // events
@@ -45,7 +47,17 @@ contract Auction {
         _;
     }
 
+    modifier onlyNotRedeemed() {
+        require(!beneficiaryRedeemed);
+        _;
+    }
+
     modifier onlyAuctionClosed() {
+        require(now > auctionEndTime);
+        _;
+    }
+
+    modifier onlyAuctionClosedOrCancelled() {
         require(cancel || now > auctionEndTime);
         _;
     }
@@ -81,13 +93,13 @@ contract Auction {
         auctionStartTime = now;
         auctionEndTime = auctionStartTime + _auctionLength;
         cancel = false;
+        beneficiaryRedeemed = false;
     }
 
-    function cancelAuction(string _reason)
+    function cancelAuction()
     public onlyBeneficiary onlyNotCancelled
     {
         cancel = true;
-        emit LogAuctionCancelled(_reason);
     }
 
     function placeBid(uint256 _bid)
@@ -108,22 +120,21 @@ contract Auction {
     }
 
     function redeem()
-    public onlyAuctionClosed
+    public onlyAuctionClosed onlyBeneficiary onlyNotRedeemed
     {
-        uint256 funds;
-        if (cancel) {
-            funds = currentBids[msg.sender];
-            currentBids[msg.sender] = 0;
-        } else {
-            if (msg.sender == beneficiary) {
-                funds = highestBid;
-            } else if (msg.sender == highestBidder) {
-                funds = 0;
-            } else {
-                funds = currentBids[msg.sender];
-            }
-        }
+        beneficiaryRedeemed = true;
+        msg.sender.transfer(highestBid);
+        emit LogRedemption(msg.sender, highestBid);
+    }
+
+    function refund()
+    public onlyAuctionClosedOrCancelled onlyNotBeneficiary
+    {
+        uint256 funds = currentBids[msg.sender];
+        currentBids[msg.sender] = 0;
+
         msg.sender.transfer(funds);
         emit LogRedemption(msg.sender, funds);
     }
 }
+

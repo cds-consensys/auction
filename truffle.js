@@ -1,9 +1,13 @@
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const mnemonic = process.env.MNEMONIC
-const infuraEndpoint = process.INFURA_ENDPOINT
+const infuraEndpoint = process.env.INFURA_ENDPOINT
 
 const path = require('path')
 const contracts_build_directory = path.join(__dirname, 'src/truffle-contracts')
+
+console.log(`contracts_build_directory: ${contracts_build_directory}`)
+console.log(`[${mnemonic}]`)
+console.log(`${infuraEndpoint}`)
 
 module.exports = {
   contracts_build_directory,
@@ -14,9 +18,7 @@ module.exports = {
       network_id: '*' // Match any network id
     },
     rinkeby: {
-      provider: function() {
-        return new HDWalletProvider(mnemonic, infuraEndpoint)
-      },
+      provider: () => new HDWalletProvider(mnemonic, infuraEndpoint),
       network_id: 4
     }
   }
