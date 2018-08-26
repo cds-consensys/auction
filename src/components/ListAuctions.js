@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import moment from 'moment'
 import { AuctionCreated as AuctionCreatedAction } from '../actions'
 import { getAuctionSummary } from '../utils'
-import ResizeImage from 'react-resize-image'
 
 class AuctionList extends Component {
   constructor() {
@@ -87,10 +86,10 @@ const AuctionTable = ({ auctions }) => (
             <td>{moment(startTime).fromNow()}</td>
             <td>{moment(endTime).fromNow()}</td>
             <td>
-              <ResizeImage
+              <img
+                style={{ 'max-width': '100px', height: 'auto' }}
                 src={`https://ipfs.io/ipfs/${ipfsHash}`}
                 alt={`${itemDescription}`}
-                options={{ width: 150 }}
               />
               {itemName}
             </td>
