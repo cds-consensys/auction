@@ -13,8 +13,8 @@ contract AuctionFactory {
     /// @dev log when an auction is created.
     /// @param auction Address of created auction.
     /// @param beneficiary The address of the beneficiary, or owner of this auction.
-    /// @param numActions The number of auctions.
-    /// @param array All auctions in the system
+    /// @param numAuctions The number of auctions.
+    /// @param auctions All auctions in the system
 
     event LogAuctionCreated(address auction, address beneficiary, uint256 numAuctions, address[] auctions);
 
@@ -23,7 +23,7 @@ contract AuctionFactory {
     /// @param itemName The name of the item.
     /// @param itemDescription Description of the item.
     /// @param ipfsHash IPFS image hash of auctioned item's picture.
-    /// @param aucitonLength The auction's duration specifid in seconds.
+    /// @param auctionLength The auction's duration specifid in seconds.
 
     function createAuction(
         address beneficiary,
@@ -42,7 +42,7 @@ contract AuctionFactory {
 
     /// @dev query for all auctions
     /// @return array of auctions
-    ///
+
     function getAllAuctions()
     public constant returns(address[])
     {

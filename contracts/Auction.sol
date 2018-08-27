@@ -93,9 +93,9 @@ contract Auction {
 
     /// @dev the caller must include funds to raise their bid
     modifier onlyHasEnoughFunds(uint256 _bid) {
-        uint256 previousBid = currentBids[msg.sender];
-        uint256 fundsNeeded = _bid - previousBid;
-        require(msg.value > fundsNeeded);
+        uint256 PreviousBid = currentBids[msg.sender];
+        uint256 fundsNeeded = _bid - PreviousBid;
+        require(msg.value >= fundsNeeded);
         _;
     }
 
@@ -106,11 +106,11 @@ contract Auction {
     }
 
     /// @dev Create a Auction
-    /// @params _beneficiary The beneficiary and owner of current Auction
-    /// @params _name Name of item
-    /// @params _description The description of item
-    /// @params _ipfsHash The IPFS hash for the item image
-    /// @params _auctionLength The duration of time the Auction will be open.
+    /// @param _beneficiary The beneficiary and owner of current Auction
+    /// @param _name Name of item
+    /// @param _description The description of item
+    /// @param _ipfsHash The IPFS hash for the item image
+    /// @param _auctionLength The duration of time the Auction will be open.
 
     constructor(
         address _beneficiary,
@@ -138,8 +138,8 @@ contract Auction {
     /// @dev Cancel the auction
     ///      This will allow the bidders and beneficiary to redeem
     ///      funds.
-    /// @pre Who: only the beneficiary
-    /// @pre When: auction not cancelled
+    /// Preconditions Who: only the beneficiary
+    /// Preconditions When: auction not cancelled
 
     function cancelAuction()
     public onlyBeneficiary onlyNotCancelled
@@ -148,8 +148,8 @@ contract Auction {
     }
 
     /// @dev Place a bid.
-    /// @pre Who: anyone except the beneficiary.
-    /// @pre When
+    /// Preconditions Who: anyone except the beneficiary.
+    /// Preconditions When
     ///        - Auction is not cancelled
     ///        - Current time is after Auction began
     ///        - Current time is before Auction ends
@@ -160,12 +160,14 @@ contract Auction {
     function placeBid(uint256 _bid)
     public payable
     onlyNotCancelled onlyAfterStart onlyBeforeEnd onlyNotBeneficiary
-    onlyNonZeroFunds onlyHasEnoughFunds(_bid) onlyRaisesBid(_bid)
+    onlyNonZeroFunds
+    // onlyHasEnoughFunds(_bid)
+    // onlyRaisesBid(_bid)
     {
 
-        /// Consider the bidder's previous bid as they raise
-        uint256 previousBid = currentBids[msg.sender];
-        uint256 increment = _bid - previousBid;
+        /// Consider the bidder'sPreconditionsvious bid as they raise
+        uint256 PreviousBid = currentBids[msg.sender];
+        uint256 increment = _bid - PreviousBid;
 
         /// and Refund the excess of their increment
         uint256 refund = msg.value - increment;
@@ -186,8 +188,8 @@ contract Auction {
     }
 
     /// @dev Redeem the highest bid
-    /// @pre Who: Only the beneficiary
-    /// @pre When
+    /// Preconditions Who: Only the beneficiary
+    /// Preconditions When
     ///        - Auction is closed.
     ///        - Beneficiary hasn't already redeemed
     function redeem()
@@ -199,8 +201,8 @@ contract Auction {
     }
 
     /// @dev Refund your losing bids
-    /// @pre Who: anyone not the beneficiary
-    /// @pre When
+    /// Preconditions Who: anyone not the beneficiary
+    /// Preconditions When
     ///        - Auction is closed or cancelled
     function refund()
     public onlyAuctionClosedOrCancelled onlyNotBeneficiary
