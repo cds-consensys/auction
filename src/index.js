@@ -8,23 +8,17 @@ import {
 } from 'react-router-dom'
 import { Provider } from 'react-redux'
 
-import SimpleStorageContract from './truffle-contracts/SimpleStorage.json'
 import AuctionFactoryContract from './truffle-contracts/AuctionFactory.json'
 import AuctionContract from './truffle-contracts/Auction.json'
 
 import Web3Load from './components/Web3Load'
-import SimpleStorage from './components/SimpleStorage'
 import CreateAuction from './components/CreateAuction'
 import ListAuctions from './components/ListAuctions'
 import AuctionDetail from './components/AuctionDetail'
 import store from './store'
 import NavBar from './components/NavBar'
 
-const contracts = [
-  SimpleStorageContract,
-  AuctionFactoryContract,
-  AuctionContract
-]
+const contracts = [AuctionFactoryContract, AuctionContract]
 
 ReactDOM.render(
   <Provider store={store}>
@@ -36,7 +30,6 @@ ReactDOM.render(
             <Route exact path="/" component={ListAuctions} />
             <Route path="/new" component={CreateAuction} />
             <Route path="/auction/:address" component={AuctionDetail} />
-            <Route path="/test" component={SimpleStorage} />
             <Route render={() => <Redirect to="/" />} />
           </Switch>
         </div>

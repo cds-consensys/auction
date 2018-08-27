@@ -23,7 +23,7 @@ class Web3Load extends Component {
     if (
       this.props.web3 &&
       this.props.accounts &&
-      Object.keys(this.props.contracts).length === 3 &&
+      Object.keys(this.props.contracts).length === 2 &&
       this.props.ipfs
     ) {
       return Children.only(this.props.children)

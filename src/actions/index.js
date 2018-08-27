@@ -31,11 +31,8 @@ export function initalizeDappState(contracts) {
       // convert contract JSON to truffle contract instance
       // const contract = require('truffle-contract')
 
-      const [SimpleStorage, AuctionFactory, Auction] = contracts.map(
-        truffleContract
-      )
+      const [AuctionFactory, Auction] = contracts.map(truffleContract)
 
-      SimpleStorage.setProvider(result.web3.currentProvider)
       AuctionFactory.setProvider(result.web3.currentProvider)
       Auction.setProvider(result.web3.currentProvider)
 
@@ -43,28 +40,24 @@ export function initalizeDappState(contracts) {
         auctionContract: Auction
       }
 
-      SimpleStorage.deployed().then(storageContract => {
-        loadedContracts.simpleStorage = storageContract
+      AuctionFactory.deployed().then(async auctionFactoryContract => {
+        loadedContracts.auctionFactory = auctionFactoryContract
+        dispatch(contractsInitialized(loadedContracts))
 
-        AuctionFactory.deployed().then(async auctionFactoryContract => {
-          loadedContracts.auctionFactory = auctionFactoryContract
-          dispatch(contractsInitialized(loadedContracts))
+        // load the auction contracts
+        const auctionAddresses = await auctionFactoryContract.getAllAuctions.call()
 
-          // load the auction contracts
-          const auctionAddresses = await auctionFactoryContract.getAllAuctions.call()
+        const contracts = await Promise.all(
+          auctionAddresses.map(auction => Auction.at(auction))
+        )
+        const promises = contracts.map(auction => getAuctionSummary(auction))
+        const transformedAuctions = await Promise.all(promises)
+        console.group('allAuctions query')
+        console.log('auctionAddresses', auctionAddresses)
+        console.log('transformed', transformedAuctions)
+        console.groupEnd()
 
-          const contracts = await Promise.all(
-            auctionAddresses.map(auction => Auction.at(auction))
-          )
-          const promises = contracts.map(auction => getAuctionSummary(auction))
-          const transformedAuctions = await Promise.all(promises)
-          console.group('allAuctions query')
-          console.log('auctionAddresses', auctionAddresses)
-          console.log('transformed', transformedAuctions)
-          console.groupEnd()
-
-          dispatch(AuctionsLoaded(transformedAuctions))
-        })
+        dispatch(AuctionsLoaded(transformedAuctions))
       })
 
       // initialize IPFS, connect to trusted infura node
