@@ -7,11 +7,12 @@ export const getAuctionSummary = async auction => {
     auction.auctionEndTime.call(),
     auction.highestBid.call(),
     auction.cancel.call(),
+    auction.beneficiary.call(),
     auction.beneficiaryRedeemed.call()
   ]
 
   const data = await Promise.all(promises)
-  const contractState = 'name description ipfsHash startTime endTime highestBid cancel beneficiaryRedeemed'.split(
+  const contractState = 'name description ipfsHash startTime endTime highestBid cancel beneficiary beneficiaryRedeemed'.split(
     ' '
   )
 
