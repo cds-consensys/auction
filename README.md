@@ -8,7 +8,7 @@ works well as the hashes are manageable and inexpensive to store.
 ## User stories
 
 1. As user I want to auction something.
-![Create Auction Screenshot](https://raw.githubusercontent.com/cds-consensys/auction/master/docs/img/create-an-auction.png)
+![Create Auction Screenshot](https://raw.githubusercontent.com/cds-consensys/auction/readme/docs/img/create-an-auction.png)
 
 
 
