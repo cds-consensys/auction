@@ -1,11 +1,12 @@
 pragma solidity 0.4.24;
 import { Auction } from "./Auction.sol";
+import { Pausable } from "../installed_contracts/zeppelin/contracts/lifecycle/Pausable.sol";
 
 /// @title Auction factory.
 ///
 /// Allows anyone actor to create an auction.
 
-contract AuctionFactory {
+contract AuctionFactory is Pausable {
 
     /// array of all auctions created
     address[] public allAuctions;
@@ -24,8 +25,8 @@ contract AuctionFactory {
     /// @param itemDescription Description of the item.
     /// @param ipfsHash IPFS image hash of auctioned item's picture.
     /// @param auctionLength The auction's duration specifid in seconds.
-
-    function createAuction(
+    function createAuction
+    (
         address beneficiary,
         string itemName,
         string itemDescription,
@@ -33,6 +34,7 @@ contract AuctionFactory {
         uint256 auctionLength
     )
     public
+    whenNotPaused
     {
         Auction theAuction = new Auction(beneficiary, itemName, itemDescription, ipfsHash, auctionLength);
         allAuctions.push(theAuction);
@@ -42,7 +44,6 @@ contract AuctionFactory {
 
     /// @dev query for all auctions
     /// @return array of auctions
-
     function getAllAuctions()
     public constant returns(address[])
     {

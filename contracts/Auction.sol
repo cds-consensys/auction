@@ -51,12 +51,14 @@ contract Auction {
 
     /// @dev Allow execution only post auction start time
     modifier onlyAfterStart() {
-        require(now > auctionStartTime);
+        // solhint-disable-next-line
+        require(now >= auctionStartTime);
         _;
     }
 
     /// @dev Allow execution only prior to auction end time
     modifier onlyBeforeEnd() {
+        // solhint-disable-next-line
         require(now < auctionEndTime);
         _;
     }
@@ -75,12 +77,14 @@ contract Auction {
 
     /// @dev Only if past the Auction end time
     modifier onlyAuctionClosed() {
+        // solhint-disable-next-line
         require(now > auctionEndTime);
         _;
     }
 
     /// @dev Only if past the Auction end time, or the auction was cancelled
     modifier onlyAuctionClosedOrCancelled() {
+        // solhint-disable-next-line
         require(cancel || now > auctionEndTime);
         _;
     }
@@ -93,8 +97,8 @@ contract Auction {
 
     /// @dev the caller must include funds to raise their bid
     modifier onlyHasEnoughFunds(uint256 _bid) {
-        uint256 PreviousBid = currentBids[msg.sender];
-        uint256 fundsNeeded = _bid - PreviousBid;
+        uint256 previousBid = currentBids[msg.sender];
+        uint256 fundsNeeded = _bid - previousBid;
         require(msg.value >= fundsNeeded);
         _;
     }
@@ -111,7 +115,6 @@ contract Auction {
     /// @param _description The description of item
     /// @param _ipfsHash The IPFS hash for the item image
     /// @param _auctionLength The duration of time the Auction will be open.
-
     constructor(
         address _beneficiary,
         string _name,
@@ -140,7 +143,6 @@ contract Auction {
     ///      funds.
     /// Preconditions Who: only the beneficiary
     /// Preconditions When: auction not cancelled
-
     function cancelAuction()
     public onlyBeneficiary onlyNotCancelled
     {
@@ -156,18 +158,19 @@ contract Auction {
     ///        - sender has funds (> 0)
     ///        - sender has enough funds to match her bid.
     ///        - sender beats the current bid
-
     function placeBid(uint256 _bid)
     public payable
-    onlyNotCancelled onlyAfterStart onlyBeforeEnd onlyNotBeneficiary
+    onlyNotCancelled
+    onlyAfterStart
+    onlyBeforeEnd
+    onlyNotBeneficiary
     onlyNonZeroFunds
-    // onlyHasEnoughFunds(_bid)
-    // onlyRaisesBid(_bid)
+    onlyHasEnoughFunds(_bid)
+    onlyRaisesBid(_bid)
     {
-
         /// Consider the bidder'sPreconditionsvious bid as they raise
-        uint256 PreviousBid = currentBids[msg.sender];
-        uint256 increment = _bid - PreviousBid;
+        uint256 previousBid = currentBids[msg.sender];
+        uint256 increment = _bid - previousBid;
 
         /// and Refund the excess of their increment
         uint256 refund = msg.value - increment;

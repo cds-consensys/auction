@@ -6,7 +6,7 @@ import "../contracts/Auction.sol";
 
 
 contract TestAuction {
-    uint public initialBalance = 5 ether;
+    // uint public initialBalance = 80 ether;
 
     Auction public auction;
     Auction public shortAuction;
@@ -16,38 +16,41 @@ contract TestAuction {
     Actor public dick;
     Actor public harry;
 
-    string itemName = "These Goods";
-    string itemDescription = "The best in the world! You need it";
-    string ipfsHash = 'DEADBEEF';
+    string public itemName = "These Goods";
+    string public itemDescription = "The best in the world! You need it";
+    string public ipfsHash = "DEADBEEF";
 
-    uint256 oneSecond = 1;
-    uint256 oneHour = 60 * 60;
-    uint256 oneDay  = 60 * 60 * 24;
-    uint256 oneEther = 1000000000000000000;
+    uint256 public oneSecond = 1;
+    uint256 public oneHour = 60 * 60;
+    uint256 public oneDay  = 60 * 60 * 24;
+    uint256 public oneEther = 1000000000000000000;
 
     // allow contract to receive ether
     function() public payable {}
+
+    function initialBalance() public pure returns(uint) {
+        return 10 ether;
+    }
 
     function beforeEach() public
     {
         // Beneficiary and bidders
         beneficiary = new Actor();
+        tom = new Actor();
         // dick = new Actor();
         // harry = new Actor();
 
-        // Seed the broke actors with some funds
+        // Seed the actors with some funds
         // Note: these values are in wei
         uint256 seedValue =  50000;
+        address(tom).transfer(oneEther);
         address(dick).transfer(seedValue);
         address(harry).transfer(seedValue);
 
         // Contracts to test
         auction = new Auction(beneficiary, itemName, itemDescription, ipfsHash, oneHour);
-        shortAuction = new Auction(beneficiary, itemName, itemDescription, ipfsHash, oneSecond);
     }
 
-    // Cancel
-    // test Beneficiary can cancel auction
     function testBeneficiaryCanCancelAuction() public {
 
         bool result = beneficiary.cancel(auction);
@@ -55,9 +58,7 @@ contract TestAuction {
 
         bool cancelled = auction.cancel();
         Assert.isTrue(cancelled, "Auction should be cancelled");
-
-        // Assert.isTrue(address(tom).balance == 50000, "Tom has funds");
-
+        Assert.isTrue(address(tom).balance == 1 ether, "Tom has funds");
     }
 
     // Cancel
@@ -81,6 +82,7 @@ contract TestAuction {
 
         result = tom.placeBid(auction, 100);
         Assert.isFalse(result, "Cannot bid on cancelled auction");
+        tom.returnFunds(this);
     }
 
     // Auction can take bids
@@ -97,26 +99,27 @@ contract TestAuction {
 contract Actor {
 
     // Allow contract to receive ether
+    // solhint-disable-next-line
     function() public payable {}
 
     function cancel(address auction)
         public returns(bool)
     {
+        // solhint-disable-next-line
         return auction.call(abi.encodeWithSignature("cancelAuction()"));
     }
 
     function placeBid(address auction, uint256 bid)
         public returns(bool)
     {
-        uint256 wad = address(this).balance;
-        return auction.call.value(wad)(abi.encodeWithSignature("placeBid(uint256)", bid));
+        // solhint-disable-next-line
+        return auction.call.value(bid)(abi.encodeWithSignature("placeBid(uint256)", bid));
     }
 
-    // function buy(uint256 sku, uint256 offer)
-        // public
-        // returns (bool)
-    // {
-        // // solhint-disable-next-line
-        // return address(auction).call.value(offer)(abi.encodeWithSignature("buyItem(uint256)", sku));
-    // }
+    function returnFunds(address runner)
+    public
+    {
+        uint256 wad = address(this).balance;
+        runner.transfer(wad);
+    }
 }
