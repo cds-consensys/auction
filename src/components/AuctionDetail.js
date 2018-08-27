@@ -17,9 +17,6 @@ class AuctionDetail extends Component {
   async componentDidMount() {
     const { address } = this.props.match.params
     const auction = this.props.auctions[address]
-    console.log('Address', address)
-    console.log('Auction', auction)
-    console.log('AUCTUINS', Object.keys(this.props.auctions))
     const auctionInstance = auction.auctionInstance
 
     try {
@@ -101,14 +98,6 @@ class AuctionDetail extends Component {
             </li>
             <li className="list-group-item">isCancelled: {cancel}</li>
           </ul>
-          <div className="card-body">
-            <a href="#" className="card-link">
-              Card link
-            </a>
-            <a href="#" className="card-link">
-              Another link
-            </a>
-          </div>
         </div>
       </React.Fragment>
     )
