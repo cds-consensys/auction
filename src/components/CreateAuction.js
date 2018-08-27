@@ -47,6 +47,9 @@ class CreateAuction extends Component {
   }
 
   async auctionCreatedListener(err, value) {
+    console.group('auctionCreatedListener')
+    console.log('value', value)
+    console.groupEnd()
     const { args } = value
     const { auction: address, beneficiary } = args
     const { defaultAccount, AuctionCreatedAction, auctionContract } = this.props

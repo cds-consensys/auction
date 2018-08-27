@@ -44,14 +44,20 @@ class AuctionList extends Component {
   }
 
   render() {
-    const { auctions } = this.props
+    const { auctionsMine, auctionsOthers } = this.props
+    console.group('render')
+    console.log('props', this.props)
+    console.log('auctionsMine', auctionsMine)
+    console.log('auctionsOthers', auctionsOthers)
+    console.groupEnd()
+    // return <h1>fooey</h1>
     return (
       <React.Fragment>
         <h1 className="display-4">Your Auctions</h1>
-        <AuctionTable auctions={auctions.myAuctions} />
+        <AuctionTable auctions={auctionsMine} />
 
         <h1 className="display-4">Other Auctions</h1>
-        <AuctionTable auctions={auctions.otherAuctions} />
+        <AuctionTable auctions={auctionsOthers} />
       </React.Fragment>
     )
   }
@@ -87,7 +93,7 @@ const AuctionTable = ({ auctions }) => (
             <td>{moment(endTime).fromNow()}</td>
             <td>
               <img
-                style={{ 'max-width': '100px', height: 'auto' }}
+                style={{ maxWidth: '100px', height: 'auto' }}
                 src={`https://ipfs.io/ipfs/${ipfsHash}`}
                 alt={`${itemDescription}`}
               />
@@ -102,8 +108,25 @@ const AuctionTable = ({ auctions }) => (
 )
 
 const mapStateToProps = state => {
+  const auctions = Object.values(state.auctions)
+  const defaultAccount = state.accounts[0]
+
+  const mine = []
+  const others = []
+  auctions.forEach(auction => {
+    if (auction.beneficiary === defaultAccount) mine.push(auction)
+    else others.push(auction)
+  })
+
+  console.group('mstp')
+  console.log('auctions', auctions)
+  console.log('mine', mine)
+  console.log('others', others)
+  console.groupEnd()
+
   return {
-    auctions: state.auctions,
+    auctionsMine: mine,
+    auctionsOthers: others,
     defaultAccount: state.accounts[0],
     auctionFactory: state.contracts.auctionFactory,
     auctionContract: state.contracts.auctionContract,
