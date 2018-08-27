@@ -48,7 +48,6 @@ run `nvm use` to activate the correct version.
    between blocks being mined on the development blockchain.
     ```sh
     cd ..
-    // 3 second blocktime.
     ganache-cli -b 3
     ```
 
