@@ -7,16 +7,7 @@ import { getAuctionSummary } from '../utils'
 class AuctionDetail extends Component {
   constructor() {
     super()
-    this.state = {
-      name: '',
-      description: '',
-      ipfsHash: '',
-      startTime: null,
-      endTime: null,
-      highestBid: 0,
-      cancel: false,
-      beneficiaryRedeemed: false
-    }
+    this.state = {}
 
     this.auctionBidListener = this.auctionBidListener.bind(this)
     this.auctionRedemptionListener = this.auctionRedemptionListener.bind(this)
@@ -24,15 +15,19 @@ class AuctionDetail extends Component {
   }
 
   async componentDidMount() {
-    const { contract } = this.props
+    const { address } = this.props.match.params
+    const auction = this.props.auctions[address]
+    console.log('Address', address)
+    console.log('Auction', auction)
+    console.log('AUCTUINS', Object.keys(this.props.auctions))
+    const auctionInstance = auction.auctionInstance
 
     try {
       this.web3events = [
-        contract.LogBid(this.auctionBidListener),
-        contract.LogRedemption(this.auctionRedemptionListener)
+        auctionInstance.LogBid(this.auctionBidListener),
+        auctionInstance.LogRedemption(this.auctionRedemptionListener)
       ]
-      const stateData = await this.getDetails()
-      this.setState(stateData)
+      this.setState(auction)
     } catch (error) {
       console.log(error)
     }
@@ -50,30 +45,6 @@ class AuctionDetail extends Component {
     console.groupEnd()
   }
 
-  async getDetails() {
-    const { contract } = this.props
-    const promises = [
-      contract.itemName.call(),
-      contract.itemDescription.call(),
-      contract.ipfsImage.call(),
-      contract.startTime.call(),
-      contract.endTime.call(),
-      contract.highestBid.call(),
-      contract.cancel.call(),
-      contract.beneficiaryRedeemed.call()
-    ]
-
-    const data = await Promise.all(promises)
-    const contractState = 'name description ipfsHash startTime endTime highestBid cancel beneficiaryRedeemed'.split(
-      ' '
-    )
-
-    return contract.State.reduce((pre, cur, dx) => {
-      pre[cur] = data[dx]
-      return pre
-    }, {})
-  }
-
   componentWillUnmount() {
     console.log('AuctionDetail::Stop watching web3 events')
     this.web3events.forEach(event => event.stopWatching())
@@ -81,70 +52,73 @@ class AuctionDetail extends Component {
   }
 
   render() {
-    const { auctions } = this.props
+    const {
+      beleficiaryRedeemed,
+      cancel,
+      description,
+      name,
+      ipfsHash,
+      highestBid,
+      endTime,
+      startTime,
+      web3
+    } = this.state
+    console.group('auctionDetails')
     console.log('STATE', this.state)
     console.log('PROPS', this.props)
+    console.groupEnd()
 
-    if (this.state.startTime === null) return <div>loading...</div>
+    if (this.state.startTime === null || this.state.startTime === undefined)
+      return <div>loading...</div>
+    console.group('auctionDetails - 2')
+    console.log('highestBid', highestBid)
+    console.log('highestBid', highestBid.toNumber())
+    console.groupEnd()
 
     return (
       <React.Fragment>
         <h1>Auction Details</h1>
+        <div className="card" style={{ width: '18rem' }}>
+          <img
+            className="card-img-top"
+            style={{ maxWidth: '300px', height: 'auto' }}
+            src={`https://ipfs.io/ipfs/${ipfsHash}`}
+            alt={``}
+          />
+          <div className="card-body">
+            <h5 className="card-title">{name}</h5>
+            <p className="card-text">{description}</p>
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              Started: {moment(startTime).fromNow()}
+            </li>
+            <li className="list-group-item">
+              Ends: {moment(endTime).fromNow()}
+            </li>
+            <li className="list-group-item">
+              Highest Bid: {highestBid.toNumber()}
+            </li>
+            <li className="list-group-item">isCancelled: {cancel}</li>
+          </ul>
+          <div className="card-body">
+            <a href="#" className="card-link">
+              Card link
+            </a>
+            <a href="#" className="card-link">
+              Another link
+            </a>
+          </div>
+        </div>
       </React.Fragment>
     )
   }
 }
 
-const AuctionTable = ({ auctions }) => (
-  <table className="table table-dark table-striped table-hover">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Start</th>
-        <th scope="col">End</th>
-        <th scope="col">Name</th>
-        <th scope="col">Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      {auctions.map(
-        (
-          {
-            startTime,
-            endTime,
-            itemName,
-            itemDescription,
-            ipfsHash,
-            isMyAuction
-          },
-          index
-        ) => (
-          <tr key={startTime.toString() + index}>
-            <th scope="row">{index}</th>
-            <td>{moment(startTime).fromNow()}</td>
-            <td>{moment(endTime).fromNow()}</td>
-            <td>
-              <img
-                style={{ 'max-width': '100px', height: 'auto' }}
-                src={`https://ipfs.io/ipfs/${ipfsHash}`}
-                alt={`${itemDescription}`}
-              />
-              {itemName}
-            </td>
-            <td>{itemDescription}</td>
-          </tr>
-        )
-      )}
-    </tbody>
-  </table>
-)
-
 const mapStateToProps = state => {
   return {
     auctions: state.auctions,
     defaultAccount: state.accounts[0],
-    auctionFactory: state.contracts.auctionFactory,
-    auctionContract: state.contracts.auctionContract,
     web3: state.web3,
     web3Context: {
       from: state.accounts[0],
@@ -153,10 +127,10 @@ const mapStateToProps = state => {
   }
 }
 
-const mapDispatchToProps = dispatch => {
-  return {
-    AuctionCreatedAction: (...args) => dispatch(AuctionCreatedAction(...args))
-  }
-}
+/* const mapDispatchToProps = dispatch => {
+ *   return {
+ *     AuctionCreatedAction: (...args) => dispatch(AuctionCreatedAction(...args))
+ *   }
+ * } */
 
-export default connect(mapStateToProps, mapDispatchToProps)(AuctionDetail)
+export default connect(mapStateToProps)(AuctionDetail)

@@ -16,6 +16,7 @@ import Web3Load from './components/Web3Load'
 import SimpleStorage from './components/SimpleStorage'
 import CreateAuction from './components/CreateAuction'
 import ListAuctions from './components/ListAuctions'
+import AuctionDetail from './components/AuctionDetail'
 import store from './store'
 import NavBar from './components/NavBar'
 
@@ -34,6 +35,7 @@ ReactDOM.render(
           <Switch>
             <Route exact path="/" component={ListAuctions} />
             <Route path="/new" component={CreateAuction} />
+            <Route path="/auction/:address" component={AuctionDetail} />
             <Route path="/test" component={SimpleStorage} />
             <Route render={() => <Redirect to="/" />} />
           </Switch>

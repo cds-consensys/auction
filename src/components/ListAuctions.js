@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import moment from 'moment'
 import { AuctionCreated as AuctionCreatedAction } from '../actions'
 import { getAuctionSummary } from '../utils'
@@ -78,7 +79,7 @@ const AuctionTable = ({ auctions }) => (
     <tbody>
       {auctions.map(
         (
-          { startTime, endTime, name, description, ipfsHash, isMyAuction },
+          { startTime, endTime, name, description, ipfsHash, auctionInstance },
           index
         ) => (
           <tr key={startTime.toString() + index}>
@@ -92,7 +93,9 @@ const AuctionTable = ({ auctions }) => (
                 alt=""
               />
             </td>
-            <td>{name}</td>
+            <td>
+              <Link to={`/auction/${auctionInstance.address}`}>{name}</Link>
+            </td>
             <td>{description}</td>
           </tr>
         )
