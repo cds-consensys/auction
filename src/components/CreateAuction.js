@@ -55,8 +55,8 @@ class CreateAuction extends Component {
     const { defaultAccount, AuctionCreatedAction, auctionContract } = this.props
 
     const auctionInstance = await auctionContract.at(address)
-    const summary = await getAuctionSummary(auctionInstance, defaultAccount)
-    AuctionCreatedAction(defaultAccount, beneficiary, summary)
+    const summary = await getAuctionSummary(auctionInstance)
+    AuctionCreatedAction(beneficiary, summary)
   }
 
   captureFile(event) {

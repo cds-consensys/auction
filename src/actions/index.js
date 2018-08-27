@@ -13,54 +13,7 @@ import {
   AUCTION_REDEEMED
 } from './types'
 
-/* helper function to transform auction addresses to a useful list of objects
- * Todo: this should move to a better place, it is not an action.
- */
-export const loadAllAuctions = async (
-  auctions,
-  auctionContract,
-  defaultAccount
-) => {
-  console.log('getAllAuctions...empty right now')
-
-  const loadedAuctionsPromises = auctions.map(address =>
-    auctionContract.at(address)
-  )
-  const loadedAuctions = await Promise.all(loadedAuctionsPromises)
-
-  const query = async auction => {
-    const startTime = await auction.auctionStartTime.call()
-    const endTime = await auction.auctionEndTime.call()
-    const itemName = await auction.itemName.call()
-    const itemDescription = await auction.itemDescription.call()
-    const ipfsHash = await auction.ipfsImage.call()
-    const beneficiary = await auction.beneficiary.call()
-    const isMyAuction = beneficiary === defaultAccount
-
-    return {
-      beneficiary,
-      auctionInstance: auction,
-      startTime: new Date(startTime.c * 1000),
-      endTime: new Date(endTime.c * 1000),
-      itemName,
-      itemDescription,
-      ipfsHash,
-      isMyAuction
-    }
-  }
-
-  const summaries = await Promise.all(
-    loadedAuctions.map(auction => query(auction))
-  )
-
-  console.group('loadedAuction contracts')
-  console.log('loadedAuctions', loadedAuctions)
-  console.log('Auction summaries', summaries)
-  console.groupEnd()
-
-  summaries.sort((a, b) => b - a)
-  return summaries
-}
+import { getAuctionSummary } from '../utils'
 
 export function initalizeDappState(contracts) {
   return dispatch => {
@@ -68,13 +21,9 @@ export function initalizeDappState(contracts) {
       // send action to save web3 instance to store
       dispatch(web3Initialized(result))
 
-      // hacky need for call to loadAllAccounts below
-      let defaultAccount
-
       //use web3 instance to get accounts
       result.web3.eth.getAccounts((err, accounts) => {
         if (err) throw err
-        defaultAccount = accounts[0]
         // send action to save accounts to store
         dispatch(accountsInitialized(accounts))
       })
@@ -101,19 +50,20 @@ export function initalizeDappState(contracts) {
           loadedContracts.auctionFactory = auctionFactoryContract
           dispatch(contractsInitialized(loadedContracts))
 
-          // load the actions
-          const auctions = await auctionFactoryContract.getAllAuctions.call()
-          const transformedAuctions = await loadAllAuctions(
-            auctions,
-            Auction,
-            defaultAccount
-          )
-          /* console.group('allAuctions query')
-           * console.log('auctions', auctions)
-           * console.log('transformed', transformedAuctions)
-           * console.groupEnd() */
+          // load the auction contracts
+          const auctionAddresses = await auctionFactoryContract.getAllAuctions.call()
 
-          dispatch(AuctionsLoaded(defaultAccount, transformedAuctions))
+          const contracts = await Promise.all(
+            auctionAddresses.map(auction => Auction.at(auction))
+          )
+          const promises = contracts.map(auction => getAuctionSummary(auction))
+          const transformedAuctions = await Promise.all(promises)
+          console.group('allAuctions query')
+          console.log('auctionAddresses', auctionAddresses)
+          console.log('transformed', transformedAuctions)
+          console.groupEnd()
+
+          dispatch(AuctionsLoaded(transformedAuctions))
         })
       })
 
@@ -158,35 +108,30 @@ export function ipfsInitialized(results) {
 
 // contract events
 
-export const AuctionsLoaded = (me, auctions) => ({
+export const AuctionsLoaded = auctions => ({
   type: AUCTIONS_LOADED,
-  auctions,
-  me
+  auctions
 })
 
-export const AuctionCreated = (me, beneficiary, address) => ({
+export const AuctionCreated = (beneficiary, address) => ({
   type: AUCTION_CREATED,
   beneficiary,
-  address,
-  me
+  address
 })
 
-export const AuctionCancelled = (me, address) => ({
+export const AuctionCancelled = address => ({
   type: AUCTION_CANCELLED,
-  address,
-  me
+  address
 })
 
-export const AuctionBidPlaced = (me, address, bid) => ({
+export const AuctionBidPlaced = (address, bid) => ({
   type: AUCTION_BID_PLACED,
   address,
-  bid,
-  me
+  bid
 })
 
-export const AuctionBidRedeemed = (me, address, bid) => ({
+export const AuctionBidRedeemed = (address, bid) => ({
   type: AUCTION_REDEEMED,
   address,
-  bid,
-  me
+  bid
 })

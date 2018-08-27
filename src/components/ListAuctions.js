@@ -35,12 +35,12 @@ class AuctionList extends Component {
   async auctionCreatedListener(err, value) {
     const { args } = value
     const { auction: address, beneficiary } = args
-    const { defaultAccount, AuctionCreatedAction, auctionContract } = this.props
+    const { AuctionCreatedAction, auctionContract } = this.props
 
     const auctionInstance = await auctionContract.at(address)
 
-    const summary = await getAuctionSummary(auctionInstance, defaultAccount)
-    AuctionCreatedAction(defaultAccount, beneficiary, summary)
+    const summary = await getAuctionSummary(auctionInstance)
+    AuctionCreatedAction(beneficiary, summary)
   }
 
   render() {
@@ -70,6 +70,7 @@ const AuctionTable = ({ auctions }) => (
         <th scope="col">#</th>
         <th scope="col">Start</th>
         <th scope="col">End</th>
+        <th scope="col">Image</th>
         <th scope="col">Name</th>
         <th scope="col">Description</th>
       </tr>
@@ -77,14 +78,7 @@ const AuctionTable = ({ auctions }) => (
     <tbody>
       {auctions.map(
         (
-          {
-            startTime,
-            endTime,
-            itemName,
-            itemDescription,
-            ipfsHash,
-            isMyAuction
-          },
+          { startTime, endTime, name, description, ipfsHash, isMyAuction },
           index
         ) => (
           <tr key={startTime.toString() + index}>
@@ -95,11 +89,11 @@ const AuctionTable = ({ auctions }) => (
               <img
                 style={{ maxWidth: '100px', height: 'auto' }}
                 src={`https://ipfs.io/ipfs/${ipfsHash}`}
-                alt={`${itemDescription}`}
+                alt=""
               />
-              {itemName}
             </td>
-            <td>{itemDescription}</td>
+            <td>{name}</td>
+            <td>{description}</td>
           </tr>
         )
       )}
