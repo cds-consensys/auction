@@ -1,15 +1,20 @@
-### Measures taken to protect against common attacks
+### Avoiding common attacks in the Auction contract
 
-:
-- Utilized OpenZeppelin Pausable lifecycle modifier to implement a circuit
-    breaker to stop new Auction contract from being created. This approach
-    still allows for existing Auctions to run.
+This document outlines how the AuctionFactory and Auction contract mitigate some
+of the most common Solidity contract vulnerabilities.
 
-- Implemented a circuit breaker / emergency stop using simple moodifiers. Only the contract owner can use this feature.
+#### DoS with Block Gas Limit.
+  Auctions could have many bidders and only one will win. As a result it may be
+  gas prohibitive to initiate refunds. Instead the Auction contract follows a
+  withdraw pattern.
 
-- In the function acceptSubmission, the transfer of funds is the last sequential execution to mitigate reentrancy attacks.
+#### Reentrancy Attacks
+  When transferring Ether for the beneficiary or refunders, state variables were
+  updated before value is transferred. This prevents a malicious contract from
+  double dipping into the escrow's funds.
 
-- No calling of external contracts occcurs in this project. This increases the security as no other controact takes over control flow.
+#### Circuit breaker
+  Use OpenZeppelin Pausable lifecycle modifier to implement a circuit
+  breaker to stop new Auction contract from being created. This approach
+  still allows for existing Auctions to run.
 
-- Added a default payable function to accept erroneous payments made to contract without calling a function:
-	> function() public payable {} Fallback function, which accepts ether when sent to contract
