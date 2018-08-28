@@ -47,7 +47,6 @@ run `nvm use` to activate the correct version.
    seconds prevents some race conditions. This value specifies the interval
    between blocks being mined on the development blockchain.
     ```sh
-    cd ..
     ganache-cli -b 3
     ```
 
@@ -62,7 +61,9 @@ run `nvm use` to activate the correct version.
     cd front-end
     npm run start
     ```
-7. visit http://localhost:3000 to interact with the front end.
+7. visit http://localhost:3000 to interact with the front end. To simulate
+   multiple users, install metamask on another browser and login in with
+   different accounts.
 
 ### Version Notice
 1. Node v9.11.2
