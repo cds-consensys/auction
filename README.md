@@ -58,7 +58,6 @@ run `nvm use` to activate the correct version.
 
 6. Run the development server for front-end hot reloading (outside the development console). Smart contract changes must be manually recompiled and migrated.
     ```sh
-    cd front-end
     npm run start
     ```
 7. visit http://localhost:3000 to interact with the front end. To simulate
