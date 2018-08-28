@@ -49,6 +49,12 @@ contract Auction {
         _;
     }
 
+    /// @dev Anyone but highest bidder
+    modifier onlyNotHighestBidder() {
+        require(msg.sender != highestBidder);
+        _;
+    }
+
     /// @dev Allow execution only post auction start time
     modifier onlyAfterStart() {
         // solhint-disable-next-line
@@ -208,7 +214,10 @@ contract Auction {
     /// Preconditions When
     ///        - Auction is closed or cancelled
     function refund()
-    public onlyAuctionClosedOrCancelled onlyNotBeneficiary
+    public
+    onlyAuctionClosedOrCancelled
+    onlyNotBeneficiary
+    onlyNotHighestBidder
     {
         uint256 funds = currentBids[msg.sender];
         currentBids[msg.sender] = 0;
