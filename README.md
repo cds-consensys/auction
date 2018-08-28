@@ -69,3 +69,6 @@ run `nvm use` to activate the correct version.
 1. Node v9.11.2
 2. Ganache CLI v6.1.8 (ganache-core: 2.2.1)
 3. Truffle v4.1.14 (core: 4.1.14) with Solidity v0.4.24 (solc-js)
+
+### Heroku
+The project has been deployed to heroku: https://auction-house-dapp.herokuapp.com/

@@ -1,0 +1,5 @@
+AuctionFactory: 0x78155afc3627fec801e43958b7faeb98aaeff452
+
+You can use the AuctionFactory to create an auction like so:
+$ truffle console --network rinkeby
+> AuctionFactory.at("0x78155afc3627fec801e43958b7faeb98aaeff452").createAuction("0x66604a9561265b2Ff7cc4BE60Dac62192ECa1d2F", "Happy Jacks", "They're Great", "QmeLHjus2yqvRYZfFnQJTzHuqdCaByNQ3vxLx3aatsW5ZV", 3600)
